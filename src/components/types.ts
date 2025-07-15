@@ -15,4 +15,6 @@ export interface Props {
     currentWordIndex: number;
     currentCharIndex: number;
     typedChars: string[][];
+    testEnded: boolean
 }
+

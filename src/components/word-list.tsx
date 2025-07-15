@@ -7,6 +7,7 @@ export const WordList: React.FC<Props> = ({
   currentWordIndex,
   currentCharIndex,
   typedChars,
+  testEnded
 }) => {
   const { showOverlay, setShowOverlay } = useOverlay();
 
@@ -19,17 +20,16 @@ export const WordList: React.FC<Props> = ({
               onClick={() => setShowOverlay(false)}
               onKeyDown={() => setShowOverlay(false)}
               tabIndex={0}
-              className="absolute top-0 left-0 backdrop-blur-[2px] inset-0 h-auto flex items-center justify-center text-xl z-50 animate-fadeIn"
+              className="absolute top-0 left-0 backdrop-blur-[4px] inset-0 h-auto flex items-center justify-center text-xl z-50 animate-fadeIn"
             >
-              <div className="p-2 text-white bg-black/5 rounded-lg text-xl">
+              <div className="p-2 text-[#ffffff] bg-black/5 rounded-lg text-xl">
                 Click here or press any key to focus
               </div>
             </div>
           )}
           {words.map((word, wIdx) => {
-            const extraChars = typedChars[wIdx]
-              ?.slice(word.length)
-              .slice(0, 5) || [];
+            const extraChars = (typedChars[wIdx]?.slice(word.length)) || [];
+            // const displayedExtraChars = extraChars.slice(0, 5);
 
             return (
               <div key={wIdx} className="gap-1">
@@ -50,8 +50,7 @@ export const WordList: React.FC<Props> = ({
                     }
                   }
 
-                  const isCursor =
-                    wIdx === currentWordIndex && cIdx === currentCharIndex;
+                  const isCursor = wIdx === currentWordIndex && cIdx === currentCharIndex;
 
                   return (
                     <span
@@ -60,7 +59,7 @@ export const WordList: React.FC<Props> = ({
                     >
                       {char}
                       {isCursor && (
-                        <span className="absolute left-0 top-0 w-[2px] h-full bg-black animate-pulse" />
+                        <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
                       )}
                     </span>
                   );
@@ -69,25 +68,18 @@ export const WordList: React.FC<Props> = ({
                 {wIdx === currentWordIndex &&
                   currentCharIndex === word.length && (
                     <span className="relative inline-block h-[1em]">
-                      <span className="absolute left-0 top-0 w-[2px] h-full bg-black animate-pulse" />
+                      <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
                     </span>
                   )}
 
                 {extraChars.map((extraChar, idx) => {
-                  const extraIndex = word.length + idx;
-                  const isCursor =
-                    wIdx === currentWordIndex &&
-                    currentCharIndex === extraIndex;
-
+               
                   return (
                     <span
                       key={`extra-${idx}`}
-                      className="text-red-500 relative inline-block"
+                      className="text-red-600/95 relative inline-block"
                     >
                       {extraChar}
-                      {isCursor && (
-                        <span className="absolute left-0 top-0 w-[2px] h-full bg-black animate-pulse" />
-                      )}
                     </span>
                   );
                 })}
@@ -95,8 +87,8 @@ export const WordList: React.FC<Props> = ({
                 {wIdx === currentWordIndex &&
                   currentCharIndex === word.length + extraChars.length &&
                   extraChars.length > 0 && (
-                    <span className="relative inline-block ">
-                      <span className="absolute left-0 top-0 w-[2px] bg-black animate-pulse" />
+                    <span className="relative inline-block h-[1em] ">
+                      <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
                     </span>
                   )}
               </div>

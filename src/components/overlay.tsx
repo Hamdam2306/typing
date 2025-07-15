@@ -7,7 +7,6 @@ interface overlayContextType {
 
 const OverlayContext = createContext<overlayContextType | undefined>(undefined)
 
-
 export const OverlayProvider = ({ children }: {children: React.ReactNode}) => {
     const [showOverlay, setShowOverlay] = useState(false)
 
@@ -23,3 +22,4 @@ export const useOverlay =() => {
     if(!context) throw new Error('useOverlay must be used')
         return context
 }
+
