@@ -7,14 +7,25 @@ export const WordList: React.FC<Props> = ({
   currentWordIndex,
   currentCharIndex,
   typedChars,
-  testEnded
+  // testEnded
 }) => {
   const { showOverlay, setShowOverlay } = useOverlay();
+
+  // const WORDS_PER_ROW = 10;
+  // const MAX_VISIBLE_ROWS = 4;
+
+  // const currentRowIndex = Math.floor(currentWordIndex / WORDS_PER_ROW);
+
+  // const wordRows: string[][] = [];
+  // for (let i = 0; i < words.length; i += WORDS_PER_ROW) {
+  //   wordRows.push(words.slice(i, i + WORDS_PER_ROW));
+  // }
+
 
   return (
     <>
       <div>
-        <div className="flex relative flex-wrap gap-x-4 text-2xl font-bold leading-relaxed max-w-5xl px-2">
+        <div className="flex relative flex-wrap gap-x-4 text-[32px] font-bold leading-relaxed max-w-7xl px-2">
           {showOverlay && (
             <div
               onClick={() => setShowOverlay(false)}
@@ -27,6 +38,8 @@ export const WordList: React.FC<Props> = ({
               </div>
             </div>
           )}
+
+
           {words.map((word, wIdx) => {
             const extraChars = (typedChars[wIdx]?.slice(word.length)) || [];
             // const displayedExtraChars = extraChars.slice(0, 5);
@@ -73,7 +86,7 @@ export const WordList: React.FC<Props> = ({
                   )}
 
                 {extraChars.map((extraChar, idx) => {
-               
+
                   return (
                     <span
                       key={`extra-${idx}`}

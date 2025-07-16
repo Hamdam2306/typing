@@ -3,12 +3,20 @@ import { WordList } from "../components/word-list";
 import { generateWord } from "../components/generate-words";
 import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
-import { BiLock } from "react-icons/bi";
+import { BiLock, BiSolidQuoteAltLeft } from "react-icons/bi";
 import { ChevronRight, Repeat2 } from "lucide-react";
+import { PiClockCountdownFill, PiCrownSimpleFill } from "react-icons/pi";
+import { RiKeyboardFill } from "react-icons/ri";
+import { FaAt, FaHashtag, FaInfoCircle, FaKeyboard, FaUserAlt, FaWrench } from "react-icons/fa";
+import { IoIosSettings } from "react-icons/io";
+import { AiOutlineClockCircle, AiOutlineFontSize} from "react-icons/ai";
+import { GoTriangleUp } from "react-icons/go";
+import { FiTool } from "react-icons/fi";
+import {  useNavigate } from "react-router-dom";
 
 
 const TypingTest = () => {
-  const TOTAL_TIME = 20;
+  const TOTAL_TIME = 15;
   const [words, setWords] = useState<string[]>(generateWord());
   const [typedChars, setTypedChars] = useState<string[][]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -21,6 +29,10 @@ const TypingTest = () => {
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
   const [typingArea, setTypingArea] = useState(true)
+  const [percent, setPercent] = useState(true)
+  const [errorKey, setErrorkey] = useState(0)
+  const navigate = useNavigate()
+
 
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -40,6 +52,7 @@ const TypingTest = () => {
     });
     return Math.round((correct / 5) / minutes);
   }, [startTime, typedChars, words]);
+
 
   const startTest = useCallback(() => {
     if (status === "running") return;
@@ -62,15 +75,26 @@ const TypingTest = () => {
       const finalCorrect = typedChars.reduce((sum, chars, idx) => {
         const word = words[idx] || "";
         return (
-          sum +
-          chars.reduce((cSum, c, i) => (word[i] === c ? cSum + 1 : cSum), 0)
+          sum + chars.reduce((cSum, c, i) => (word[i] === c ? cSum + 1 : cSum), 0)
         );
       }, 0);
+
+      const totalLetters = typedChars.reduce((sum, arr) => sum + arr.length, 0)
+
+      console.log(totalLetters)
+
+      setErrorkey(
+        Math.floor((finalCorrect / totalLetters) * 100)
+      )
+
+
       setCorrectChars(finalCorrect);
       if (startTime) {
         const minutes = (Date.now() - startTime) / 1000 / 60;
-        setWpm(Math.round((finalCorrect / 5) / minutes));
+        const result = Number(Math.round((finalCorrect / 4.5) / minutes))
+        setWpm(result)
       }
+
     }
   }, [timeLeft, status, startTime, typedChars, words]);
 
@@ -100,38 +124,61 @@ const TypingTest = () => {
   }, []);
 
   useEffect(() => {
+    
     const handleKey = (e: KeyboardEvent) => {
+      const audio = new Audio("../public/click.wav");
+      audio.volume = 1; 
+
       if (testEnded) return;
       setShowCapsLock(e.getModifierState("CapsLock"));
 
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "p") {
+      if (e.ctrlKey && e.key === "k") {
+        alert('settings')
         e.preventDefault();
       } else if (e.key === "Tab") {
         e.preventDefault();
         btnRef.current?.focus();
         setShowOverlay(true);
-      } else if (e.key === "Backspace") {
+      }
+      else if (e.key === "Backspace") {
         setShowOverlay(false);
         btnRef.current?.blur();
-        const updated = [...typedChars];
+
+        if (
+          currentCharIndex === 0 &&
+          currentWordIndex > 0
+        ) {
+          const prevTyped = typedChars[currentWordIndex - 1].join("");
+          const prevTarget = words[currentWordIndex - 1];
+          if (prevTyped === prevTarget) {
+            return;
+          }
+        }
+
+        const updated = typedChars.map(arr => [...arr]); // chuqur nusxa
         if (currentCharIndex > 0) {
           updated[currentWordIndex].splice(currentCharIndex - 1, 1);
           setTypedChars(updated);
-          setCurrentCharIndex((i) => i - 1);
+          setCurrentCharIndex(i => i - 1);
+
         } else if (currentWordIndex > 0) {
-          const prev = typedChars[currentWordIndex - 1] || [];
-          setCurrentWordIndex((i) => i - 1);
+          const prev = updated[currentWordIndex - 1];
+          setCurrentWordIndex(i => i - 1);
           setCurrentCharIndex(prev.length);
+          setTypedChars(updated);
         }
-      } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
+      }
+      else if (e.key === " " && typedChars[currentWordIndex]?.length) {
         setCurrentWordIndex((i) => i + 1);
         setCurrentCharIndex(0);
       } else if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        audio.currentTime = 0
+        audio.play()
+
         setShowOverlay(false);
         btnRef.current?.blur();
         if (status === "idle") startTest();
 
-        // Extra character limitation (max 5 extra chars per word)
         const currentWord = words[currentWordIndex] || '';
         const currentTyped = typedChars[currentWordIndex] || [];
         if (currentTyped.length >= currentWord.length + 5) {
@@ -167,40 +214,116 @@ const TypingTest = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto relative">
-      {testEnded && (
-        <div className="text-center flex flex-col items-center">
-          <div className="text-2xl font-bold mb-2">Test Completed!</div>
-          <div className="text-4xl font-bold text-[#eeeeee]">{wpm} WPM</div>
-          <div className="text-gray-400 mt-2">
-            {correctChars} correct characters
-          </div>
-          <button
-              onClick={restart}
-              ref={btnRef}
-              className="flex items-center p-2 mt-4 rounded-xl hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-              aria-label="Restart test"
-            >
-              <ChevronRight className="h-8 w-8"/>
-              <span></span>
-            </button>
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col justify-start max-w-7xl mx-auto px-5 py-8">
+      {testEnded ? (
+        <div className="flex flex-col justify-center items-center text-center gap-10 min-h-screen">
+          <h1 className="text-6xl font-bold text-white">Test Completed!</h1>
 
-      {typingArea && (
-        <div>
-          <div className="flex justify-between items-center mb-5">
-            <div className="text-2xl font-bold font-serif">
-              ⏱ {formatTime(timeLeft)}
+          <div className="flex flex-col gap-4">
+            <div className="text-5xl font-bold text-green-400">{wpm} WPM</div>
+            <div className="text-5xl font-bold text-red-400">{errorKey}%</div>
+          </div>
+
+          <button
+            onClick={restart}
+            ref={btnRef}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-xl transition"
+            aria-label="Restart test"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-10">
+
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4 text-white">
+              <RiKeyboardFill className="text-3xl" />
+              <h1 className="text-3xl font-bold">GoTyping</h1>
+
+              <div className="flex items-center gap-3 ml-6 text-lg">
+                <FaKeyboard className="hover:text-blue-400 cursor-pointer" />
+                <PiCrownSimpleFill className="hover:text-yellow-400 cursor-pointer" />
+                <FaInfoCircle className="hover:text-sky-400 cursor-pointer" />
+                <IoIosSettings className="hover:text-gray-300 cursor-pointer" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-white" onClick={() => {navigate('/account')}}>
+              <FaUserAlt className="text-lg" />
+              <button>Hurmatullayev</button>
             </div>
           </div>
 
+          <div className="bg-[#575353] text-white rounded-xl px-3 py-2 flex flex-wrap md:flex-nowrap items-center justify-center md:justify-center gap-5 text-sm font-medium max-w-4xl w-full mx-auto overflow-x-auto">
+            <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <FaAt />
+                <span>punctuation</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <FaHashtag />
+                <span>numbers</span>
+              </div>
+
+              <div className="w-[1px] h-4 bg-[#222] hidden md:block mx-2" />
+
+              <div className="flex items-center gap-1 text-gray-100 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <AiOutlineClockCircle />
+                <span>time</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <AiOutlineFontSize />
+                <span>words</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <BiSolidQuoteAltLeft />
+                <span>quote</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <GoTriangleUp className="text-xl" />
+                <span>zen</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
+                <FiTool />
+                <span>custom</span>
+              </div>
+            </div>
+
+            <div className="w-[1px] h-4 bg-[#222] hidden md:block mx-2" />
+
+            <div className="flex items-center gap-5 flex-wrap md:flex-nowrap whitespace-nowrap">
+              <span className="text-gray-100 cursor-pointer hover:text-white">15</span>
+              <span className="text-gray-400 cursor-pointer hover:text-white">30</span>
+              <span className="text-gray-400 cursor-pointer hover:text-white">60</span>
+              <span className="text-gray-400 cursor-pointer hover:text-white">120</span>
+
+              <FaWrench className="text-gray-400 cursor-pointer hover:text-white" />
+            </div>
+
+            {/* <div>English</div> */}
+          </div>
+
+          
+
+
+          <div className="flex justify-start mb-1">
+            <div className="text-3xl font-bold font-serif flex items-center gap-3 text-white">
+              <PiClockCountdownFill />
+              {formatTime(timeLeft)}
+            </div>
+          </div>
 
           {showCapsLock && (
-            <div className="fixed top-4 right-4 z-10">
-              <div className="flex items-center bg-yellow-100 border px-3 py-2 rounded-lg shadow-md">
-                <BiLock className="w-5 h-5" />
-                <span>Caps Lock On</span>
+            <div className="fixed top-4 left-4 z-50">
+              <div className="flex items-center gap-2 bg-white border border-gray-400 px-4 py-2 rounded-lg shadow-md">
+                <BiLock className="w-5 h-5 text-black" />
+                <span className="text-sm font-medium text-black">Caps Lock On</span>
               </div>
             </div>
           )}
@@ -217,16 +340,16 @@ const TypingTest = () => {
             <button
               onClick={restart}
               ref={btnRef}
-              className="flex items-center p-3 mt-4 rounded-xl hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white transition text-lg"
               aria-label="Restart test"
             >
-            <Repeat2 size={28} strokeWidth={3} absoluteStrokeWidth />
-              <span></span>
+              <Repeat2 size={24} strokeWidth={3} absoluteStrokeWidth />
             </button>
           </div>
         </div>
       )}
     </div>
+
   );
 };
 
