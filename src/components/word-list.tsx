@@ -7,19 +7,10 @@ export const WordList: React.FC<Props> = ({
   currentWordIndex,
   currentCharIndex,
   typedChars,
-  // testEnded
+
 }) => {
   const { showOverlay, setShowOverlay } = useOverlay();
 
-  // const WORDS_PER_ROW = 10;
-  // const MAX_VISIBLE_ROWS = 4;
-
-  // const currentRowIndex = Math.floor(currentWordIndex / WORDS_PER_ROW);
-
-  // const wordRows: string[][] = [];
-  // for (let i = 0; i < words.length; i += WORDS_PER_ROW) {
-  //   wordRows.push(words.slice(i, i + WORDS_PER_ROW));
-  // }
 
 
   return (

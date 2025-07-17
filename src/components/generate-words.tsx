@@ -200,7 +200,7 @@ const WORDS = [
   "line"
 ]
 
-export const generateWord = (count: number = 50): string[] => {
+export const generateWord = (count: number = 35): string[] => {
   if (count > WORDS.length) {
     throw new Error("So'rov qilingan so'zlar soni mavjud so'zlardan ko'p.");
   }

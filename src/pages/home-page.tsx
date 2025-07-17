@@ -5,14 +5,13 @@ import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
 import { BiLock, BiSolidQuoteAltLeft } from "react-icons/bi";
 import { ChevronRight, Repeat2 } from "lucide-react";
-import { PiClockCountdownFill, PiCrownSimpleFill } from "react-icons/pi";
-import { RiKeyboardFill } from "react-icons/ri";
-import { FaAt, FaHashtag, FaInfoCircle, FaKeyboard, FaUserAlt, FaWrench } from "react-icons/fa";
-import { IoIosSettings } from "react-icons/io";
-import { AiOutlineClockCircle, AiOutlineFontSize} from "react-icons/ai";
+import { PiClockCountdownFill } from "react-icons/pi";
+import { FaAt, FaHashtag, FaWrench } from "react-icons/fa";
+import { AiOutlineClockCircle, AiOutlineFontSize } from "react-icons/ai";
 import { GoTriangleUp } from "react-icons/go";
 import { FiTool } from "react-icons/fi";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "./navbar";
 
 
 const TypingTest = () => {
@@ -29,9 +28,9 @@ const TypingTest = () => {
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
   const [typingArea, setTypingArea] = useState(true)
-  const [percent, setPercent] = useState(true)
   const [errorKey, setErrorkey] = useState(0)
-  const navigate = useNavigate()
+
+  const navigate = useNavigate();
 
 
   const { setShowOverlay } = useOverlay();
@@ -81,7 +80,6 @@ const TypingTest = () => {
 
       const totalLetters = typedChars.reduce((sum, arr) => sum + arr.length, 0)
 
-      console.log(totalLetters)
 
       setErrorkey(
         Math.floor((finalCorrect / totalLetters) * 100)
@@ -124,10 +122,10 @@ const TypingTest = () => {
   }, []);
 
   useEffect(() => {
-    
+
     const handleKey = (e: KeyboardEvent) => {
       const audio = new Audio("../public/click.wav");
-      audio.volume = 1; 
+      audio.volume = 1;
 
       if (testEnded) return;
       setShowCapsLock(e.getModifierState("CapsLock"));
@@ -214,9 +212,9 @@ const TypingTest = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-start max-w-7xl mx-auto px-5 py-8">
+    <div className="min-h-screen flex flex-col justify-start max-w-7xl mx-auto px-5 py-10">
       {testEnded ? (
-        <div className="flex flex-col justify-center items-center text-center gap-10 min-h-screen">
+        <div className="flex flex-col items-center text-center gap-10 mt-10">
           <h1 className="text-6xl font-bold text-white">Test Completed!</h1>
 
           <div className="flex flex-col gap-4">
@@ -236,24 +234,7 @@ const TypingTest = () => {
       ) : (
         <div className="flex flex-col gap-10">
 
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4 text-white">
-              <RiKeyboardFill className="text-3xl" />
-              <h1 className="text-3xl font-bold">GoTyping</h1>
-
-              <div className="flex items-center gap-3 ml-6 text-lg">
-                <FaKeyboard className="hover:text-blue-400 cursor-pointer" />
-                <PiCrownSimpleFill className="hover:text-yellow-400 cursor-pointer" />
-                <FaInfoCircle className="hover:text-sky-400 cursor-pointer" />
-                <IoIosSettings className="hover:text-gray-300 cursor-pointer" />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-white" onClick={() => {navigate('/account')}}>
-              <FaUserAlt className="text-lg" />
-              <button>Hurmatullayev</button>
-            </div>
-          </div>
+          <Navbar />
 
           <div className="bg-[#575353] text-white rounded-xl px-3 py-2 flex flex-wrap md:flex-nowrap items-center justify-center md:justify-center gap-5 text-sm font-medium max-w-4xl w-full mx-auto overflow-x-auto">
             <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2">
@@ -309,8 +290,16 @@ const TypingTest = () => {
             {/* <div>English</div> */}
           </div>
 
-          
 
+
+          {showCapsLock && (
+            <div className="fixed z-2 top-20">
+              <div className="flex items-center gap-2 bg-white border border-gray-400 px-4 py-2 rounded-lg shadow-md">
+                <BiLock className="w-5 h-5 text-black" />
+                <span className="text-sm font-medium text-black">Caps Lock On</span>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-start mb-1">
             <div className="text-3xl font-bold font-serif flex items-center gap-3 text-white">
@@ -319,14 +308,6 @@ const TypingTest = () => {
             </div>
           </div>
 
-          {showCapsLock && (
-            <div className="fixed top-4 left-4 z-50">
-              <div className="flex items-center gap-2 bg-white border border-gray-400 px-4 py-2 rounded-lg shadow-md">
-                <BiLock className="w-5 h-5 text-black" />
-                <span className="text-sm font-medium text-black">Caps Lock On</span>
-              </div>
-            </div>
-          )}
 
           <div className="flex flex-col items-center gap-10">
             <WordList
@@ -340,11 +321,19 @@ const TypingTest = () => {
             <button
               onClick={restart}
               ref={btnRef}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white transition text-lg"
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gray-900 hover:bg-gray-300 text-white transition text-lg"
               aria-label="Restart test"
             >
               <Repeat2 size={24} strokeWidth={3} absoluteStrokeWidth />
             </button>
+
+            <div className="flex gap-2 items-center mt-10 text-[12px]">
+              <button className="border bg-gray-300 text-black py-0 px-1 rounded-md">tab</button>
+              <div className="border bg-black text-gray-300 py-0 px-1 rounded-md">+</div>
+              <div className="border bg-gray-300 text-black py-0 px-1 rounded-md">enter</div>
+              <div>=</div>
+              <div>Restart</div>
+            </div>
           </div>
         </div>
       )}

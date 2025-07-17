@@ -1,7 +1,6 @@
 // auth/login.ts
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../register/firebase";
-
+import { auth } from "./firebase";
 
 
 interface LoginData {
