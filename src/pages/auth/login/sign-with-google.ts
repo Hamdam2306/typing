@@ -15,6 +15,7 @@ export const signInWithGoogle = async () => {
     await setDoc(userRef, {
       firstname: user.displayName?.split(" ")[0] || "",
       lastname: user.displayName?.split(" ")[1] || "",
+      nickname: null,
       email: user.email,
       phone: user.phoneNumber || "",
       age: null,

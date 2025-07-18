@@ -200,11 +200,7 @@ const WORDS = [
   "line"
 ]
 
-export const generateWord = (count: number = 35): string[] => {
-  if (count > WORDS.length) {
-    throw new Error("So'rov qilingan so'zlar soni mavjud so'zlardan ko'p.");
-  }
-
+export const generateWord = (count: number = 199): string[] => {
   const shuffled = [...WORDS].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 };

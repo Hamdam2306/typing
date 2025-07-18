@@ -1,44 +1,32 @@
-import { useState, useRef } from "react";
+// Tahrirlangan: Google login, nickname tekshiruv va saqlash to'liq ishlaydi
+import { useState, useRef, useEffect } from "react";
 import { loginUser } from "./login";
 import { signInWithGoogle } from "./sign-with-google";
 import { useNavigate } from "react-router-dom";
-import { EyeIcon, EyeOffIcon, X } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2Icon, X } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Navbar } from "@/pages/navbar";
+import { Button } from "@/components/ui/button";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { checkUserNickname } from "./nickname";
+import { doc, updateDoc, getDocs, collection, query, where } from "firebase/firestore";
 
-interface Props {
-  onSave: (nickname: string) => void;
-}
-
-export const LoginForm = ({ onSave }: Props) => {
+export const LoginForm = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const [nickname, setNickname] = useState("");
-  const [showNickName, setShowNickName] = useState(false)
+  const [showNickName, setShowNickName] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (nickname.trim()) {
-      onSave(nickname.trim());
-    }
-  };
+  const formRef = useRef<HTMLFormElement>(null);
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[e.target.name];
-        return newErrors
-      });
-    }
-  };
+  
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -56,10 +44,20 @@ export const LoginForm = ({ onSave }: Props) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[e.target.name];
+        return newErrors;
+      });
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // Fixed missing parentheses
+    e.preventDefault();
     setSubmitError(null);
 
     if (!validateForm()) {
@@ -73,38 +71,14 @@ export const LoginForm = ({ onSave }: Props) => {
     try {
       const user = await loginUser(formData);
       console.log("Logged in:", user);
-
-      if (formRef.current) {
-        formRef.current.classList.add("success");
-        setTimeout(() => {
-          if (formRef.current) formRef.current.classList.remove("success");
-        }, 2000);
-      }
-
       setIsLoading(false);
-      setShowNickName(true); // Show nickname input after successful login
 
+      const nickname = await checkUserNickname();
+      if (!nickname) setShowNickName(true);
+      else navigate("/profile");
     } catch (error: any) {
-      console.error("Login error:", error);
-
-      if (error.code === "auth/user-not-found" ||
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/invalid-credential") {
-        setSubmitError("Email/password is incorrect or your account does not have password authentication enabled");
-        setTimeout(() => setSubmitError(null), 2000);
-      } else if (error.code === "auth/too-many-requests") {
-        setSubmitError("Too many attempts. Please wait and try again later");
-        setTimeout(() => setSubmitError(null), 2000);
-
-      } else if (error.code === "auth/invalid-email") {
-        setSubmitError("Invalid email format");
-        setTimeout(() => setSubmitError(null), 2000);
-
-      } else {
-        setSubmitError("Sign-in failed. Please try again later");
-        setTimeout(() => setSubmitError(null), 2000);
-
-      }
+      setSubmitError("Login failed. Check credentials or try again later.");
+      setTimeout(() => setSubmitError(null), 2000);
       setIsLoading(false);
     }
   };
@@ -112,61 +86,60 @@ export const LoginForm = ({ onSave }: Props) => {
   const handleGoogleSignIn = async () => {
     setSubmitError(null);
     setIsLoading(true);
-
     try {
       const user = await signInWithGoogle();
       console.log("Logged in with Google:", user);
 
-      if (formRef.current) {
-        formRef.current.classList.add("success");
-        setTimeout(() => {
-          if (formRef.current) formRef.current.classList.remove("success");
-        }, 1000);
-      }
+      const nickname = await checkUserNickname();
+      if (!nickname) setShowNickName(true);
+      else navigate("/profile");
 
-
-      setTimeout(() => {
-        setIsLoading(false);
-        setShowNickName(true)
-
-        if (showNickName) {
-          navigate('/profile')
-        }
-      }, 100);
+      setIsLoading(false);
     } catch (error: any) {
-      console.error("Google sign-in error:", error);
-
-      if (error.code === "auth/popup-closed-by-user") {
-        setSubmitError("Google sign-in was interrupted. Please try again");
-        setTimeout(() => setSubmitError(null), 2000);
-
-      } else {
-        setSubmitError("Google login failed. Try again later");
-        setTimeout(() => setSubmitError(null), 2000);
-
-      }
+      setSubmitError("Google login failed. Try again later");
+      setTimeout(() => setSubmitError(null), 2000);
       setIsLoading(false);
     }
   };
 
+  const handleSaveNickname = async () => {
+    const user = auth.currentUser;
+    if (!user || !nickname.trim()) return;
 
+    const q = query(collection(db, "users"), where("nickname", "==", nickname));
+    const qSnap = await getDocs(q);
+    if (!qSnap.empty) {
+      setSubmitError("Bu nickname allaqachon band!");
+      setTimeout(() => setSubmitError(null), 2000);
+      return;
+    }
+
+    await updateDoc(doc(db, "users", user.uid), { nickname });
+    navigate("/profile");
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const nickname = await checkUserNickname();
+        if (nickname) {
+          setShowNickName(false);
+          navigate("/profile");
+        } else {
+          setShowNickName(true);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="flex justify-center gap-20">
-
-
+    <div>
+      <Navbar />
       {showNickName ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#111111] rounded-2xl shadow-xl w-[300px] h-[200px] p-6 flex flex-col justify-between">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (nickname.trim()) {
-                  navigate('/');
-                }
-              }}
-              className="flex flex-col h-full justify-between"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveNickname(); }} className="flex flex-col h-full justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-center mb-2 text-white">Enter Nickname</h2>
                 <input
@@ -174,21 +147,17 @@ export const LoginForm = ({ onSave }: Props) => {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   placeholder="Your nickname"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
               </div>
-              <button
-                type="submit"
-                className="mt-4 bg-gray-600 hover:bg-gray-700 text-white text-sm py-2 rounded-lg transition-colors"
-              >
+              <button type="submit" className="mt-4 bg-gray-600 hover:bg-gray-700 text-white text-sm py-2 rounded-lg">
                 Save
               </button>
             </form>
           </div>
         </div>
-
       ) : (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             <div className="bg-[#1f1f1f] text-white rounded-xl shadow-md p-6">
               <form onSubmit={handleLogin} className="space-y-6">
@@ -206,17 +175,13 @@ export const LoginForm = ({ onSave }: Props) => {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{submitError}</p>
                         </div>
-                        <button
-                          onClick={() => setSubmitError(null)}
-                          className="text-white/80 hover:text-white transition-colors"
-                        >
+                        <button onClick={() => setSubmitError(null)} className="text-white/80 hover:text-white">
                           <X size={18} />
                         </button>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
 
                 <div>
                   <label className="text-sm block mb-1">Email</label>
@@ -225,7 +190,7 @@ export const LoginForm = ({ onSave }: Props) => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full bg-transparent border border-gray-700 rounded px-3 py-2"
                   />
                 </div>
 
@@ -237,18 +202,14 @@ export const LoginForm = ({ onSave }: Props) => {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-blue-400"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
                     >
-                      {showPassword ? (
-                        <EyeIcon />
-                      ) : (
-                        <EyeOffIcon />
-                      )}
+                      {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                     </button>
                   </div>
                 </div>
@@ -256,9 +217,15 @@ export const LoginForm = ({ onSave }: Props) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full bg-blue-600 hover:bg-blue-700 transition text-white font-medium rounded px-4 py-2 ${isLoading && 'opacity-75 cursor-not-allowed'}`}
+                  className="w-full border hover:bg-[#0b0b0b] transition font-medium rounded px-4 py-2"
                 >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+                  {isLoading ? (
+                    <Button size="sm" className="text-xs" disabled>
+                      <Loader2Icon className="animate-spin" /> Please wait
+                    </Button>
+                  ) : (
+                    "Sign In"
+                  )}
                 </button>
 
                 <div className="flex items-center my-4 text-sm text-gray-500">
@@ -270,19 +237,15 @@ export const LoginForm = ({ onSave }: Props) => {
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded border border-gray-600 hover:bg-gray-800 transition"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded border border-gray-600 hover:bg-gray-800"
                 >
-                  <FcGoogle />
-                  <span>Sign in with Google</span>
+                  <FcGoogle /> <span>Sign in with Google</span>
                 </button>
-
               </form>
             </div>
           </div>
         </div>
       )}
-
-
     </div>
   );
 };

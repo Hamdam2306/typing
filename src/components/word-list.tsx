@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { Props } from "./types";
 import { useOverlay } from "../components/overlay";
 
@@ -7,11 +7,74 @@ export const WordList: React.FC<Props> = ({
   currentWordIndex,
   currentCharIndex,
   typedChars,
-
 }) => {
   const { showOverlay, setShowOverlay } = useOverlay();
 
+  const { lines, currentLine, wordToLineMap } = useMemo(() => {
+    const maxCharsPerLine = 68; // har qatorda maksimal 65 ta harf
+    const lines: string[][] = [];
+    const wordToLineMap: number[] = []; // har bir so'z qaysi qatorda
+    let currentLine = 0;
+    let currentLineChars = 0;
+    let currentLineWords: string[] = [];
 
+    words.forEach((word, wordIndex) => {
+      // Agar so'z qo'shilganda qator uzunligi 65 dan oshsa, yangi qator boshlaymiz
+      const wordLength = word.length;
+      const spaceNeeded = currentLineWords.length > 0 ? 1 : 0; // bo'shliq uchun
+
+      if (currentLineChars + spaceNeeded + wordLength > maxCharsPerLine && currentLineWords.length > 0) {
+        // Joriy qatorni saqlash va yangi qator boshlash
+        lines.push([...currentLineWords]);
+        currentLineWords = [word];
+        currentLineChars = wordLength;
+        currentLine++;
+      } else {
+        // Joriy qatorga so'z qo'shish
+        currentLineWords.push(word);
+        currentLineChars += spaceNeeded + wordLength;
+      }
+
+      wordToLineMap[wordIndex] = currentLine;
+    });
+
+    // Oxirgi qatorni qo'shish
+    if (currentLineWords.length > 0) {
+      lines.push(currentLineWords);
+    }
+
+    // Hozirgi so'z qaysi qatorda ekanligini aniqlash
+    const currentLineIndex = wordToLineMap[currentWordIndex] || 0;
+
+    return { lines, currentLine: currentLineIndex, wordToLineMap };
+  }, [words, currentWordIndex]);
+
+  // Ko'rsatiladigan qatorlarni aniqlash
+  const visibleLines = useMemo(() => {
+    const maxVisibleLines = 3;
+    let startLine = Math.max(0, currentLine - 1); // Hozirgi qatordan 1 ta yuqori
+
+    // Agar oxirgi qatorlarga yetib kelganda, oxirgi 3 qatorni ko'rsatish
+    if (startLine + maxVisibleLines > lines.length) {
+      startLine = Math.max(0, lines.length - maxVisibleLines);
+    }
+
+    return lines.slice(startLine, startLine + maxVisibleLines);
+  }, [lines, currentLine]);
+
+  // Har bir ko'rinadigan qator uchun boshlang'ich indeksni hisoblash
+  const getWordIndex = (lineIndex: number, wordIndex: number) => {
+    const actualLineIndex = Math.max(0, currentLine - 1) + lineIndex;
+    if (actualLineIndex >= lines.length) return -1;
+
+    // Shu qatorgacha bo'lgan barcha so'zlarni sanash
+    let totalWords = 0;
+    for (let i = 0; i < actualLineIndex; i++) {
+      totalWords += lines[i].length;
+    }
+
+    return totalWords + wordIndex;
+  };
 
   return (
     <>
@@ -24,80 +87,86 @@ export const WordList: React.FC<Props> = ({
               tabIndex={0}
               className="absolute top-0 left-0 backdrop-blur-[4px] inset-0 h-auto flex items-center justify-center text-xl z-50 animate-fadeIn"
             >
-              <div className="p-2 text-[#ffffff] bg-black/5 rounded-lg text-xl">
+              <div className="p-2 text-[#ffffff] bg-black/5 rounded-lg text-3xl font-black">
                 Click here or press any key to focus
               </div>
             </div>
           )}
 
+          {visibleLines.map((line, lineIdx) => (
+            <div key={lineIdx} className="flex flex-wrap gap-x-4 relative">
+              {line.map((word, wordIdx) => {
+                const actualWordIndex = getWordIndex(lineIdx, wordIdx);
+                if (actualWordIndex === -1) return null;
 
-          {words.map((word, wIdx) => {
-            const extraChars = (typedChars[wIdx]?.slice(word.length)) || [];
-            // const displayedExtraChars = extraChars.slice(0, 5);
+                const extraChars = (typedChars[actualWordIndex]?.slice(word.length)) || [];
 
-            return (
-              <div key={wIdx} className="gap-1">
-                {word.split("").map((char, cIdx) => {
-                  const userChar = typedChars[wIdx]?.[cIdx];
-                  let className = "";
+                return (
+                  <div key={wordIdx} className="gap-1">
+                    {word.split("").map((char, cIdx) => {
+                      const userChar = typedChars[actualWordIndex]?.[cIdx];
+                      let className = "";
 
-                  if (wIdx < currentWordIndex) {
-                    className =
-                      userChar === char ? "text-green-500" : "text-red-500";
-                  } else if (wIdx === currentWordIndex) {
-                    if (userChar == null) {
-                      className = "";
-                    } else if (userChar === char) {
-                      className = "text-green-500";
-                    } else if (userChar !== char && userChar !== "") {
-                      className = "text-red-500";
-                    }
-                  }
+                      if (actualWordIndex < currentWordIndex) {
+                        className = userChar === char ? "text-green-500" : "text-red-500";
+                      } else if (actualWordIndex === currentWordIndex) {
+                        if (userChar == null) {
+                          className = "";
+                        } else if (userChar === char) {
+                          className = "text-green-500";
+                        } else if (userChar !== char && userChar !== "") {
+                          className = "text-red-500";
+                        }
+                      }
 
-                  const isCursor = wIdx === currentWordIndex && cIdx === currentCharIndex;
+                      const isCursor = actualWordIndex === currentWordIndex && cIdx === currentCharIndex;
 
-                  return (
-                    <span
-                      key={cIdx}
-                      className={`relative inline-block ${className}`}
-                    >
-                      {char}
-                      {isCursor && (
-                        <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
+                      return (
+                        <span
+                          key={cIdx}
+                          className={`relative inline-block ${className}`}
+                        >
+                          {char}
+                          {isCursor && (
+                            <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
+                          )}
+                        </span>
+                      );
+                    })}
+
+                    {/* So'z oxirida cursor */}
+                    {actualWordIndex === currentWordIndex &&
+                      currentCharIndex === word.length && (
+                        <span className="relative inline-block h-[1em]">
+                          <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
+                        </span>
                       )}
-                    </span>
-                  );
-                })}
 
-                {wIdx === currentWordIndex &&
-                  currentCharIndex === word.length && (
-                    <span className="relative inline-block h-[1em]">
-                      <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
-                    </span>
-                  )}
+                    {/* Ortiqcha belgilar */}
+                    {extraChars.map((extraChar, idx) => {
+                      return (
+                        <span
+                          key={`extra-${idx}`}
+                          className="text-red-600/95 relative inline-block"
+                        >
+                          {extraChar}
+                        </span>
+                      );
+                    })}
 
-                {extraChars.map((extraChar, idx) => {
-
-                  return (
-                    <span
-                      key={`extra-${idx}`}
-                      className="text-red-600/95 relative inline-block"
-                    >
-                      {extraChar}
-                    </span>
-                  );
-                })}
-
-                {wIdx === currentWordIndex &&
-                  currentCharIndex === word.length + extraChars.length &&
-                  extraChars.length > 0 && (
-                    <span className="relative inline-block h-[1em] ">
-                      <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
-                    </span>
-                  )}
-              </div>
-            );
-          })}
+                    {/* Ortiqcha belgilar oxirida cursor */}
+                    {actualWordIndex === currentWordIndex &&
+                      currentCharIndex === word.length + extraChars.length &&
+                      extraChars.length > 0 && (
+                        <span className="relative inline-block h-[1em]">
+                          <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
+                        </span>
+                      )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
     </>

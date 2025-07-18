@@ -10,13 +10,14 @@ const AuthObserver = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
+      
+      if (user) {
         const token = await user.getIdToken();
         dispatch(setUser({
           uid: user.uid,
           email: user.email!,
           displayName: user.displayName ?? "",
-          token, // 🟢 tokenni yuborish
+          token,  
 
         }));
       } else {
