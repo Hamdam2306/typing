@@ -11,6 +11,7 @@ import { TypingStatsProvider } from './pages/typing-context';
 import { Provider } from 'react-redux';
 import { store } from './pages/auth/login/store.tsx';
 import AuthObserver from './pages/auth/login/auth-listener.tsx';
+import { TypingProvider } from './context/typing-context.tsx';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
@@ -18,8 +19,9 @@ createRoot(document.getElementById('root')!).render(
 			<BrowserRouter>
 				<OverlayProvider>
 					<TypingStatsProvider>
-						<AuthObserver />
-					
+						<TypingProvider>
+							<AuthObserver />
+						</TypingProvider>
 					</TypingStatsProvider>
 				</OverlayProvider>
 			</BrowserRouter>

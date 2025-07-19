@@ -4,6 +4,7 @@ import { LoginForm } from "../pages/auth/login/login-form";
 import NotFoundPage from "../pages/not-found.p";
 import { Profile } from "../pages/profile.tsx";
 import PrivateRoute from "../components/privaterouter.tsx";
+import Leadboard from "@/pages/leadboard.tsx";
 
 
 export const Router = () => {
@@ -11,6 +12,7 @@ export const Router = () => {
     <Routes>
       <Route path="/" element={<TypingArea />} />
       <Route path="/account" element={<LoginForm onSave={(data)}/>} />
+      <Route path="/leadboard" element={<Leadboard />} />
 
       <Route
         path="/profile"

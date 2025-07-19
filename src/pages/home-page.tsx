@@ -4,7 +4,7 @@ import { generateWord } from "../components/generate-words";
 import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
 import { BiLock, BiSolidQuoteAltLeft } from "react-icons/bi";
-import { ChevronRight, Repeat, Repeat1, Repeat2, RepeatIcon } from "lucide-react";
+import { ChevronRight, RepeatIcon } from "lucide-react";
 import { PiClockCountdownFill } from "react-icons/pi";
 import { FaAt, FaHashtag, FaWrench } from "react-icons/fa";
 import { AiOutlineClockCircle, AiOutlineFontSize } from "react-icons/ai";
@@ -12,6 +12,10 @@ import { GoTriangleUp } from "react-icons/go";
 import { FiTool } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "./navbar";
+import { useTyping } from "@/context/typing-context";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { auth, db } from "./auth/login/firebase";
 
 
 const TypingTest = () => {
@@ -23,33 +27,68 @@ const TypingTest = () => {
   const [status, setStatus] = useState<TestStatus>("idle");
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [wpm, setWpm] = useState(0);
-  const [correctChars, setCorrectChars] = useState(0);
+  const [correctChars, setCorrectChars] = useState(0)
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
   const [typingArea, setTypingArea] = useState(true)
-  const [errorKey, setErrorkey] = useState(0)
-
-  const navigate = useNavigate();
-
-
+  const { wpm, setWpm, errorKey, setErrorKey } = useTyping();
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
   //@ts-ignore
   const intervalRef = useRef<number>();
+  const [accuracy, setAccuracy] = useState(0); 
 
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const saveScoreToFirebase = async (user: User, wpm: number, accuracy: number) => { // Changed errorKey to accuracy
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const oldData = userSnap.data();
+      const oldScore = oldData.score || 0;
+      const oldPercentage = oldData.percentage || 0;
+
+      const newScore = Math.max(oldScore, wpm);
+      const newPercentage = Math.max(oldPercentage, accuracy); // Using accuracy here
+
+      await updateDoc(userRef, {
+        score: newScore,
+        percentage: newPercentage,
+        updatedAt: new Date(),
+      });
+      console.log("✅ Yangi natija saqlandi:", newScore, newPercentage);
+    } else {
+      console.log("❌ Foydalanuvchi topilmadi Firestore'da.");
+    }
+  }
+
+  // Consistent WPM calculation logic
   const calculateWpm = useCallback(() => {
     if (!startTime) return 0;
     const minutes = (Date.now() - startTime) / 1000 / 60;
     if (minutes <= 0) return 0;
-    let correct = 0;
+
+    let correctCharacters = 0;
+    // Only count characters up to the current word being typed
+    // Or, for a more accurate WPM, count correct characters across all completed words
+    // For simplicity and consistency with your current `calculateWpm` structure,
+    // let's stick to accumulating correct characters from all typed content.
     typedChars.forEach((chars, idx) => {
       const word = words[idx] || "";
       chars.forEach((c, i) => {
-        if (word[i] === c) correct++;
+        if (word[i] === c) correctCharacters++;
       });
     });
-    return Math.round((correct / 5) / minutes);
+    return Math.round((correctCharacters / 5) / minutes);
   }, [startTime, typedChars, words]);
 
 
@@ -71,39 +110,52 @@ const TypingTest = () => {
       setStatus("finished");
       setTestEnded(true);
       setTypingArea(false)
-      const finalCorrect = typedChars.reduce((sum, chars, idx) => {
-        const word = words[idx] || "";
-        return (
-          sum + chars.reduce((cSum, c, i) => (word[i] === c ? cSum + 1 : cSum), 0)
-        );
-      }, 0);
 
-      const totalLetters = typedChars.reduce((sum, arr) => sum + arr.length, 0)
+      let totalCorrectChars = 0;
+      let totalTypedAttemptedChars = 0; // Total characters user attempted to type (correct + incorrect + extra)
+      let totalExpectedChars = 0; // Total characters in the words up to the last word typed
 
+      typedChars.forEach((chars, wordIdx) => {
+        const word = words[wordIdx] || "";
+        totalExpectedChars += word.length; // Add length of the actual word
 
-      setErrorkey(
-        Math.floor((finalCorrect / totalLetters) * 100)
-      )
+        chars.forEach((char, charIdx) => {
+          totalTypedAttemptedChars++; // Increment for every character typed
+          if (word[charIdx] === char) {
+            totalCorrectChars++;
+          }
+        });
+      });
 
-
-      setCorrectChars(finalCorrect);
+      // Calculate WPM using the consistent method
       if (startTime) {
         const minutes = (Date.now() - startTime) / 1000 / 60;
-        const result = Number(Math.round((finalCorrect / 4) / minutes))
-        setWpm(result)
+        const finalWpm = Math.round((totalCorrectChars / 5) / minutes);
+        setWpm(finalWpm);
       }
 
+      // Calculate Accuracy
+      let calculatedAccuracy = 0;
+      if (totalTypedAttemptedChars > 0) {
+        calculatedAccuracy = Math.floor((totalCorrectChars / totalTypedAttemptedChars) * 100);
+      }
+      setErrorKey(calculatedAccuracy); // Update context with accuracy
+      setAccuracy(calculatedAccuracy); // Update local state for accuracy
+
+      // Now save to Firebase with the calculated WPM and Accuracy
+      if (user) {
+        saveScoreToFirebase(user, wpm, calculatedAccuracy); // Pass the calculated values
+      }
     }
-  }, [timeLeft, status, startTime, typedChars, words]);
+  }, [timeLeft, status, startTime, typedChars, words, setWpm, setErrorKey, user, wpm, accuracy]); // Added wpm and accuracy to dependency array for firebase save
 
   useEffect(() => {
     if (status !== "running") return;
     const wpmInterval = window.setInterval(() => {
       setWpm(calculateWpm());
-    }, 200);
+    }, 100);
     return () => clearInterval(wpmInterval);
-  }, [status, calculateWpm]);
-
+  }, [status, calculateWpm, setWpm]); // Added setWpm to dependencies
 
   const restart = useCallback(() => {
     setTypingArea(true)
@@ -116,11 +168,13 @@ const TypingTest = () => {
     setTimeLeft(TOTAL_TIME);
     setStartTime(null);
     setWpm(0);
-    setCorrectChars(0);
+    setCorrectChars(0); // Reset correctChars
+    setErrorKey(0); // Reset errorKey (accuracy)
+    setAccuracy(0); // Reset local accuracy
     setTestEnded(false);
     setShowOverlay(false);
     btnRef.current?.blur();
-  }, []);
+  }, [setWpm, setErrorKey, setShowOverlay]); // Added setWpm, setErrorKey, setShowOverlay to dependencies
 
   useEffect(() => {
 
@@ -147,8 +201,9 @@ const TypingTest = () => {
           currentCharIndex === 0 &&
           currentWordIndex > 0
         ) {
-          const prevTyped = typedChars[currentWordIndex - 1].join("");
+          const prevTyped = typedChars[currentWordIndex - 1]?.join("");
           const prevTarget = words[currentWordIndex - 1];
+          // Only allow backspace into the previous word if there were errors or extra characters
           if (prevTyped === prevTarget) {
             return;
           }
@@ -161,15 +216,22 @@ const TypingTest = () => {
           setCurrentCharIndex(i => i - 1);
 
         } else if (currentWordIndex > 0) {
-          const prev = updated[currentWordIndex - 1];
-          setCurrentWordIndex(i => i - 1);
-          setCurrentCharIndex(prev.length);
+          // Move back to the end of the previous word
+          const prevWordIndex = currentWordIndex - 1;
+          const prevTypedChars = updated[prevWordIndex] || [];
+          setCurrentWordIndex(prevWordIndex);
+          setCurrentCharIndex(prevTypedChars.length);
+          // No need to remove from typedChars when moving back to previous word,
+          // only when backspacing within the current word.
           setTypedChars(updated);
         }
       }
       else if (e.key === " " && typedChars[currentWordIndex]?.length) {
-        setCurrentWordIndex((i) => i + 1);
-        setCurrentCharIndex(0);
+        // Only move to the next word if the current word has been typed
+        if (currentWordIndex < words.length - 1) { // Prevent going past generated words
+          setCurrentWordIndex((i) => i + 1);
+          setCurrentCharIndex(0);
+        }
       } else if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
         audio.currentTime = 0
         audio.play()
@@ -180,7 +242,7 @@ const TypingTest = () => {
 
         const currentWord = words[currentWordIndex] || '';
         const currentTyped = typedChars[currentWordIndex] || [];
-        if (currentTyped.length >= currentWord.length + 5) {
+        if (currentTyped.length >= currentWord.length + 5) { // Limit extra characters
           return;
         }
 
@@ -211,7 +273,6 @@ const TypingTest = () => {
     const s = (sec % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
-
 
   return (
     <div>

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/menubar"
 import { logout } from "@/pages/auth/login/logout"
 import { auth, db } from "./auth/login/firebase"
-import { NicknameInit } from "./auth/login/nickname-init"
 import { useEffect } from "react"
 import { setNickName } from "./auth/login/auth-slice"
 import { onAuthStateChanged } from "firebase/auth"
@@ -38,7 +37,7 @@ export const Navbar = () => {
 
 
     useEffect(() => {
-        // Sahifa yuklanganda Firebase’dan nickname olish
+        
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userRef = doc(db, "users", user.uid);
@@ -90,7 +89,7 @@ export const Navbar = () => {
 
                     <div className="flex items-center gap-4 ml-6 text-xl">
                         <FaKeyboard className="hover:text-blue-400 cursor-pointer" />
-                        <PiCrownSimpleFill className="hover:text-yellow-400 cursor-pointer" />
+                        <PiCrownSimpleFill onClick={() => {navigate('leadboard')}} className="hover:text-yellow-400 cursor-pointer" />
                         <FaInfoCircle className="hover:text-sky-400 cursor-pointer" />
                         <IoIosSettings className="hover:text-gray-300 cursor-pointer" />
                     </div>
