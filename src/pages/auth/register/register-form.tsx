@@ -1,244 +1,341 @@
-// import { useState, useEffect, useRef } from "react";
-// import { RegisterUser } from "./register";
-// import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { auth, db } from "../login/firebase"; // db - Firestore instance
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Loader2Icon, X } from "lucide-react";
+import {motion, AnimatePresence } from "framer-motion";
 
+export const RegisterForm = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    nickname: "",
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: "",
+    role: "user",
+  });
 
-// export const RegisterForm = () => {
-//   const navigate = useNavigate()
-//   const [formData, setFormData] = useState({
-//     firstname: "",
-//     lastname: "",
-//     email: "",
-//     password: "",
-//     phone: "",
-//     role: "user",
-//     age: '',
-//   });
+  // We no longer need 'errors' state for inline messages
+  // const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (!formData.password) {
+      setPasswordStrength(0);
+      return;
+    }
+
+    let strength = 0;
+    if (formData.password.length >= 8) strength += 25;
+    if (/[A-Z]/.test(formData.password)) strength += 25;
+    if (/[0-9]/.test(formData.password)) strength += 25;
+    if (/[^A-Za-z0-9]/.test(formData.password)) strength += 25;
+
+    setPasswordStrength(strength);
+  }, [formData.password]);
+
+  const validateForm = () => {
+    const errors: string[] = [];
   
-//   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-//   const [submitError, setSubmitError] = useState<string | null>(null);
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const [passwordStrength, setPasswordStrength] = useState(0);
-//   const formRef = useRef<HTMLFormElement>(null);
+    if (!formData.nickname.trim() || formData.nickname.trim().length < 2) {
+      errors.push("Nickname must be at least 2 characters.");
+    }
+  
+    if (!formData.firstname.trim() || formData.firstname.trim().length < 2) {
+      errors.push("First name must be at least 2 characters.");
+    }
+  
+    if (!formData.lastname.trim() || formData.lastname.trim().length < 2) {
+      errors.push("Last name must be at least 2 characters.");
+    }
+  
+    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.push("Valid email is required.");
+    }
+  
+    if (!formData.password.trim() || formData.password.length < 8) {
+      errors.push("Password must be at least 8 characters.");
+    }
+  
+    if (errors.length > 0) {
+      setSubmitError(errors[0]); // faqat birinchi xatoni ko‘rsatamiz
+      return false;
+    }
+  
+    setSubmitError(null);
+    return true;
+  };
+  
 
-//   useEffect(() => {
-//     if (!formData.password) {
-//       setPasswordStrength(0);
-//       return;
-//     }
-    
-//     let strength = 0;
-//     if (formData.password.length >= 8) strength += 25;
-//     if (/[A-Z]/.test(formData.password)) strength += 25;
-//     if (/[0-9]/.test(formData.password)) strength += 25;
-//     if (/[^A-Za-z0-9]/.test(formData.password)) strength += 25;
-    
-//     setPasswordStrength(strength);
-//   }, [formData.password]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    // No need to clear individual errors here as they are no longer displayed inline
+  };
 
-//   const validateForm = () => {
-//     const newErrors: { [key: string]: string } = {};
+  const getPasswordStrengthText = () => {
+    if (passwordStrength === 0) return "";
+    if (passwordStrength <= 25) return "Weak";
+    if (passwordStrength <= 50) return "Fair";
+    if (passwordStrength <= 75) return "Good";
+    return "Strong";
+  };
 
-//     if (!formData.firstname.trim()) {
-//       newErrors.firstname = "First name is required.";
-//     } else if (formData.firstname.trim().length < 2) {
-//       newErrors.firstname = "First name must be at least 2 characters.";
-//     }
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength <= 25) return "bg-red-500";
+    if (passwordStrength <= 50) return "bg-yellow-500";
+    if (passwordStrength <= 75) return "bg-blue-500";
+    return "bg-green-500";
+  };
 
-//     if (!formData.lastname.trim()) {
-//       newErrors.lastname = "Last name is required.";
-//     } else if (formData.lastname.trim().length < 2) {
-//       newErrors.lastname = "Last name must be at least 2 characters.";
-//     }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null); // Clear previous submission errors before new attempt
 
-//     if (!formData.email.trim()) {
-//       newErrors.email = "Email is required.";
-//     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-//       newErrors.email = "Invalid email format.";
-//     }
+    if (!validateForm()) {
+     console.log("validetion failed")
+      setIsSubmitting(false);
+      return;
+    }
 
-//     if (!formData.password.trim()) {
-//       newErrors.password = "Password is required.";
-//     } else if (formData.password.length < 8) {
-//       newErrors.password = "Password must be at least 8 characters.";
-//     }
-
-//     if (!formData.phone.trim()) {
-//       newErrors.phone = "Phone number is required.";
-//     } else if (!/^\+?\d{9,15}$/.test(formData.phone)) {
-//       newErrors.phone = "Invalid phone number format.";
-//     }
-
-//     const ageNumber = parseInt(formData.age);
-//     if (isNaN(ageNumber)) {
-//       newErrors.age = "Age is required.";
-//     } else if (ageNumber < 18) {
-//       newErrors.age = "You must be at least 18 years old.";
-//     } else if (ageNumber > 120) {
-//       newErrors.age = "Invalid age value.";
-//     }
-
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
-
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-    
-//     if (name === "age") {
-//       const numValue = parseInt(value);
-//       if (!isNaN(numValue)) {
-//         if (numValue < 0) return;
-//         if (numValue > 120) return;
-//       }
-//     }
-    
-//     setFormData({ ...formData, [name]: value });
-    
-//     if (errors[name]) {
-//       setErrors(prev => {
-//         const newErrors = { ...prev };
-//         delete newErrors[name];
-//         return newErrors;
-//       });
-//     }
-//   };
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-//     setSubmitError(null);
-
-//     if (!validateForm()) {
-//       setIsSubmitting(false);
-//       setSubmitError("Please correct the errors in the form.");
-//       return;
-//     }
-
-//     try {
-//       await RegisterUser({
-//         ...formData,
-//         age: parseInt(formData.age),
-//       });
+    const isNicknameTaken = async (nickname: string): Promise<boolean> => {
+        try {
+          const q = query(
+            collection(db, "users"),
+            where("nickname", "==", nickname.trim())
+          );
       
-//       if (formRef.current) {
-//         formRef.current.classList.add("success");
-//         setTimeout(() => {
-//           if (formRef.current) formRef.current.classList.remove("success");
-//         }, 2000);
-//       }
+          const querySnapshot = await getDocs(q);
+          console.log("Nickname query result:", querySnapshot.docs.length);
+          return !querySnapshot.empty;
+        } catch (error) {
+          console.error("Error checking nickname:", error);
+          throw new Error("nickname-check-failed");
+        }
+      };
       
-//       setTimeout(() => {
-//         setFormData({
-//           firstname: "",
-//           lastname: "",
-//           email: "",
-//           password: "",
-//           phone: "",
-//           role: "user",
-//           age: '',
-//         });
-//         setErrors({});
-//         setIsSubmitting(false);
-        
-//         navigate('/')
-//       }, 1500);
       
-//     } catch (err: any) {
-//       console.error("Registration Error:", err);
-//       setSubmitError(err.message || "An error occurred during registration. Please try again.");
-//       setIsSubmitting(false);
+
+    try {
+        const exists = await isNicknameTaken(formData.nickname);
+        if (exists) {
+          setSubmitError("This nickname is already taken.");
+          setIsSubmitting(false);
+          return;
+        }
+      
+      } catch (err) {
+        console.error("Nickname tekshirishda xato:", err);
+        setSubmitError("An error occurred while checking nickname.");
+        setIsSubmitting(false);
+      }
+      
+
+    try {
+      // 1. Firebase Auth orqali foydalanuvchini yaratish
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      const user = userCredential.user;
+
+      // 2. Firestore-ga user haqida ma'lumot saqlash
+      await setDoc(doc(db, "users", user.uid), {
+        nickname: formData.nickname,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
+        role: formData.role,
+        uid: user.uid,
+        createdAt: new Date(),
+        score: 0, 
+        percentage: 0 
+      });
+
+      // 3. Firebase profildagi `displayName`ni nickname qilib qo'yish
+      await updateProfile(user, { displayName: formData.nickname });
+
+      // 4. Tozalash va navigate qilish
+      setFormData({
+        nickname: "",
+        firstname: "",
+        lastname: "",
+        email: "",
+        password: "",
+        role: "user",
+      });
+      // setErrors({}); // No longer needed
+      setIsSubmitting(false);
+      navigate('/profile');
+
+    } catch (err: any) {
+      console.error("Registration Error:", err);
+      let errorMessage = "An error occurred during registration.";
+
+      // Firebase error codes ni user-friendly qilib ko'rsatish
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "This email is already registered.";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "Password is too weak.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Invalid email address.";
+          break;
+        default:
+          errorMessage = err.message || errorMessage;
+      }
+
+      setSubmitError(errorMessage);
+      setIsSubmitting(false);
+    }
+  };
+ 
+//   const handleNicknameBlur = async () => {
+//     if (!formData.nickname.trim()) return;
+  
+//     const exists = await isNicknameTaken(formData.nickname);
+//     if (exists) {
+//       setSubmitError("This nickname is already taken.");
+//     } else if (submitError === "This nickname is already taken.") {
+//       setSubmitError(null); // foydalanuvchi o‘zgartirganda tozalanadi
 //     }
 //   };
+  
+ 
+  return (
+    <div className="flex p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-[#1f1f1f] rounded-xl shadow-md p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 text-white">
 
+            {/* Submit Error (Top-level notification) */}
+            <AnimatePresence>
+                  {submitError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -50 }}
+                      transition={{ type: "spring", damping: 25, stiffness: 500 }}
+                      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md"
+                    >
+                      <div className="bg-red-500/90 text-white px-4 py-3 rounded-lg shadow-lg flex items-start gap-3">
+                        <AlertCircle className="flex-shrink-0 mt-0.5" size={18} />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{submitError}</p>
+                        </div>
+                        <button onClick={() => setSubmitError(null)} className="text-white/80 hover:text-white">
+                          <X size={18} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+            {/* Nickname */}
+            <div>
+              <label className="text-sm mb-1 block">Nickname</label>
+              <input
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                // onBlur={handleNicknameBlur}
+                // Removed conditional border styling
+                className={`w-full bg-transparent border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-700`}
+              />
+              {/* Removed error text */}
+            </div>
 
-//   return (
-//     <div className="min-h-screen flex items-center justify-center p-4">
-//   <div className="w-full max-w-md">
-//     <div className="bg-[#1f1f1f] rounded-xl shadow-md p-6">
-//       <form onSubmit={handleSubmit} className="space-y-5 text-white">
+            {/* First Name & Last Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm mb-1 block">First Name</label>
+                <input
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  // Removed conditional border styling
+                  className={`w-full bg-transparent border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-700`}
+                />
+                {/* Removed error text */}
+              </div>
+              <div>
+                <label className="text-sm mb-1 block">Last Name</label>
+                <input
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  // Removed conditional border styling
+                  className={`w-full bg-transparent border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-700`}
+                />
+                {/* Removed error text */}
+              </div>
+            </div>
 
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//           <div>
-//             <label className="text-sm mb-1 block">First Name</label>
-//             <input
-//               name="firstname"
-//               value={formData.firstname}
-//               onChange={handleChange}
-//               className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             />
-//           </div>
-//           <div>
-//             <label className="text-sm mb-1 block">Last Name</label>
-//             <input
-//               name="lastname"
-//               value={formData.lastname}
-//               onChange={handleChange}
-//               className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             />
-//           </div>
-//         </div>
+            <div>
+              <label className="text-sm mb-1 block">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full bg-transparent border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-700`}
+              />
+            </div>
 
-//         {/* Email */}
-//         <div>
-//           <label className="text-sm mb-1 block">Email</label>
-//           <input
-//             type="email"
-//             name="email"
-//             value={formData.email}
-//             onChange={handleChange}
-//             className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//         </div>
+            <div>
+              <label className="text-sm mb-1 block">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                // Removed conditional border styling
+                className={`w-full bg-transparent border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-700`}
+              />
+              {/* Removed error text */}
 
-//         {/* Password */}
-//         <div>
-//           <label className="text-sm mb-1 block">Password</label>
-//           <input
-//             type="password"
-//             name="password"
-//             value={formData.password}
-//             onChange={handleChange}
-//             className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//         </div>
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-700 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                        style={{ width: `${passwordStrength}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-400">{getPasswordStrengthText()}</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
-//         {/* Phone + Age */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//           <div>
-//             <label className="text-sm mb-1 block">Phone</label>
-//             <input
-//               name="phone"
-//               value={formData.phone}
-//               onChange={handleChange}
-//               className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             />
-//           </div>
-//           <div>
-//             <label className="text-sm mb-1 block">Age</label>
-//             <input
-//               type="number"
-//               name="age"
-//               value={formData.age}
-//               onChange={handleChange}
-//               className="w-full bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             />
-//           </div>
-//         </div>
-
-     
-
-//         {/* Submit Button */}
-//         <button
-//           type="submit"
-//           className="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold rounded px-4 py-2"
-//         >
-//           Create Account
-//         </button>
-//       </form>
-//     </div>
-//   </div>
-// </div>
-
-//   );
-// };
+            <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full border hover:bg-[#0b0b0b] transition font-medium rounded px-4 py-2"
+                >
+                  {isSubmitting ? (
+                    <Button size="sm" className="text-xs" disabled>
+                      <Loader2Icon className="animate-spin" /> Please wait
+                    </Button>
+                  ) : (
+                    "Sign In"
+                  )}
+                </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};

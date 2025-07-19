@@ -17,10 +17,10 @@ export const signInWithGoogle = async () => {
       lastname: user.displayName?.split(" ")[1] || "",
       nickname: null,
       email: user.email,
-      phone: user.phoneNumber || "",
-      age: null,
       role: "user",
       createdAt: serverTimestamp(),
+      score: 0,
+      percentage: 0 
     });
   }
 

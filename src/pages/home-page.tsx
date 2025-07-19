@@ -12,7 +12,6 @@ import { GoTriangleUp } from "react-icons/go";
 import { FiTool } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "./navbar";
-import { auth } from "./auth/login/firebase";
 
 
 const TypingTest = () => {
@@ -104,6 +103,7 @@ const TypingTest = () => {
     }, 200);
     return () => clearInterval(wpmInterval);
   }, [status, calculateWpm]);
+
 
   const restart = useCallback(() => {
     setTypingArea(true)
@@ -211,8 +211,6 @@ const TypingTest = () => {
     const s = (sec % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
-
-  
 
 
   return (

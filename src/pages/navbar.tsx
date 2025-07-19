@@ -2,9 +2,9 @@ import { FaInfoCircle, FaKeyboard, FaUserAlt } from "react-icons/fa"
 import { IoIosSettings } from "react-icons/io"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import { RiKeyboardFill } from "react-icons/ri"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./auth/login/store"
-import { useNavigate } from "react-router-dom"
+import { data, useNavigate } from "react-router-dom"
 import {
     Menubar,
     MenubarMenu,
@@ -12,12 +12,50 @@ import {
     MenubarContent,
     MenubarItem,
 } from "@/components/ui/menubar"
-import { logout } from "@/components/logout"
+import { logout } from "@/pages/auth/login/logout"
+import { auth, db } from "./auth/login/firebase"
+import { NicknameInit } from "./auth/login/nickname-init"
+import { useEffect } from "react"
+import { setNickName } from "./auth/login/auth-slice"
+import { onAuthStateChanged } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 
 export const Navbar = () => {
     const navigate = useNavigate()
-    const user = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch();
 
+    const user = useSelector((state: RootState) => state.auth);
+    const nickname = useSelector((state: any) => state.auth.nickname)
+
+    useEffect(() => {
+        if (!nickname) {
+            const savedNickname = localStorage.getItem("nickname");
+            if (savedNickname) {
+                dispatch(setNickName(savedNickname));
+            }
+        }
+    }, [nickname]);
+
+
+    useEffect(() => {
+        // Sahifa yuklanganda Firebase’dan nickname olish
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    dispatch(setNickName(data.nickname));
+                    localStorage.setItem("nickname", data.nickname); // fallback
+                }
+            } else {
+                dispatch(setNickName("")); // logout holatida tozalash
+                localStorage.removeItem("nickname");
+            }
+        });
+
+        return () => unsubscribe(); // memory tozalash
+    }, []);
 
     const handleClick = () => {
         if (user.uid) {
@@ -42,6 +80,7 @@ export const Navbar = () => {
     return (
 
         <nav>
+
             <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-5 py-8">
                 <div className="flex items-center gap-3 text-white">
                     <div onClick={() => { navigate('/') }} className="flex gap-2 items-center">
@@ -70,11 +109,13 @@ export const Navbar = () => {
 
                 <Menubar>
                     <MenubarMenu>
-                        <MenubarTrigger><FaUserAlt className="text-2xl" /></MenubarTrigger>
+
+                        <MenubarTrigger><FaUserAlt className="text-2xl flex gap-2" />{nickname || "Guest"}</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem onClick={handleClick} >Profile</MenubarItem>
                             <MenubarItem onClick={() => logout(navigate)}>Log out</MenubarItem>
                         </MenubarContent>
+                        {/* <p>{nickname}</p> */}
                     </MenubarMenu>
                 </Menubar>
 

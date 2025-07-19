@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface UserState {
+  nickname: string | null;
   uid: string | null;
   email: string | null;
   displayName?: string;
@@ -8,6 +9,7 @@ interface UserState {
 }
 
 const initialState: UserState = {
+  nickname: "",
   uid: null,
   email: null,
   displayName: "",
@@ -33,8 +35,11 @@ const authSlice = createSlice({
       state.displayName = "";
       state.token = null;
     },
+    setNickName: (state , action) => {
+      state.nickname = action.payload
+    }
   },
 });
 
-export const { setUser, clearUser } = authSlice.actions;
+export const { setUser, clearUser, setNickName } = authSlice.actions;
 export default authSlice.reducer;

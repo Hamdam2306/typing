@@ -1,13 +1,15 @@
 import { signOut } from "firebase/auth";
-import { auth } from "../pages/auth/login/firebase";
-import { store } from "../pages/auth/login/store";
-import { clearUser } from "../pages/auth/login/auth-slice";
+import { auth } from "./firebase";
+import { store } from "./store";
+import { clearUser, setNickName } from "./auth-slice";
 
 
 export const logout = async (navigate: (path: string) => void) => {
     try {
         await signOut(auth);
         store.dispatch(clearUser());
+        store.dispatch(setNickName(''))
+        localStorage.removeItem("nickname")
         navigate("/");
         console.log("User logged out successfully.");
     } catch (error) {

@@ -13,6 +13,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { checkUserNickname } from "./nickname";
 import { doc, updateDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import { setNickName } from "./auth-slice";
+import { RegisterForm } from "../register/register-form";
 
 export const LoginForm = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,10 +24,14 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [nickname, setNickname] = useState("");
-  const [showNickName, setShowNickName] = useState(false);
+  const [showNickNameModal, setShowNickName] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const navigate = useNavigate();
+
+  const dispatch = useDispatch()
+  localStorage.setItem("nickname", nickname)
+  dispatch(setNickName(nickname))
 
   
 
@@ -86,15 +93,22 @@ export const LoginForm = () => {
   const handleGoogleSignIn = async () => {
     setSubmitError(null);
     setIsLoading(true);
+    // let classname = '';
     try {
       const user = await signInWithGoogle();
       console.log("Logged in with Google:", user);
 
       const nickname = await checkUserNickname();
-      if (!nickname) setShowNickName(true);
-      else navigate("/profile");
-
+      if (!nickname) {
+        setShowNickName(true);
+      }
+      else {
+        navigate("/profile")
+      }
       setIsLoading(false);
+
+      // classname = nickname
+
     } catch (error: any) {
       setSubmitError("Google login failed. Try again later");
       setTimeout(() => setSubmitError(null), 2000);
@@ -109,7 +123,8 @@ export const LoginForm = () => {
     const q = query(collection(db, "users"), where("nickname", "==", nickname));
     const qSnap = await getDocs(q);
     if (!qSnap.empty) {
-      setSubmitError("Bu nickname allaqachon band!");
+      setSubmitError("this nickname is already in use");
+      alert('this nick name is already in use')
       setTimeout(() => setSubmitError(null), 2000);
       return;
     }
@@ -136,7 +151,7 @@ export const LoginForm = () => {
   return (
     <div>
       <Navbar />
-      {showNickName ? (
+      {showNickNameModal ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#111111] rounded-2xl shadow-xl w-[300px] h-[200px] p-6 flex flex-col justify-between">
             <form onSubmit={(e) => { e.preventDefault(); handleSaveNickname(); }} className="flex flex-col h-full justify-between">
@@ -157,7 +172,10 @@ export const LoginForm = () => {
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center p-4">
+
+        <div className="flex justify-center mt-10 gap-10 ">
+          <RegisterForm/>
+          <div className="flex p-4">
           <div className="w-full max-w-md">
             <div className="bg-[#1f1f1f] text-white rounded-xl shadow-md p-6">
               <form onSubmit={handleLogin} className="space-y-6">
@@ -244,6 +262,7 @@ export const LoginForm = () => {
               </form>
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>
