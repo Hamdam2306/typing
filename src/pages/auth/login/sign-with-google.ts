@@ -20,7 +20,8 @@ export const signInWithGoogle = async () => {
       role: "user",
       createdAt: serverTimestamp(),
       score: 0,
-      percentage: 0 
+      percentage: 0,
+      testcount: 0
     });
   }
 

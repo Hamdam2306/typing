@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  PaginationState,
-  SortingState,
   useReactTable,
+  type ColumnDef,
+  type PaginationState,
+  type SortingState,
 } from "@tanstack/react-table"
 import {
   ChevronDownIcon,

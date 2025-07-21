@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "./navbar";
 import { useEffect, useState } from "react";  
 import { onAuthStateChanged } from "firebase/auth"; 
-import { doc, getDoc } from "firebase/firestore"; 
+import { doc, getDoc, setDoc } from "firebase/firestore"; 
 import { auth, db } from "./auth/login/firebase";
 
 export const Profile = () => {
@@ -48,6 +48,8 @@ export const Profile = () => {
     return () => unsubscribe(); 
   }, [navigate]); 
 
+
+
   if (loading) {
     return (
       <div>
@@ -75,6 +77,8 @@ export const Profile = () => {
       </div>
     );
   }
+
+ await setDoc(doc(db, ))
 
   return (
     <div>

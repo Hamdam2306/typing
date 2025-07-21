@@ -235,7 +235,7 @@ export const LoginForm = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full border hover:bg-[#0b0b0b] transition font-medium rounded px-4 py-2"
+                  className="w-full border hover:bg-[#0b0b0b] transition font-medium rounded h-[44px]"
                 >
                   {isLoading ? (
                     <Button size="sm" className="text-xs" disabled>

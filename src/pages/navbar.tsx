@@ -82,14 +82,14 @@ export const Navbar = () => {
 
             <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-5 py-8">
                 <div className="flex items-center gap-3 text-white">
-                    <div onClick={() => { navigate('/') }} className="flex gap-2 items-center">
+                    <div onClick={() => { navigate('/')}} className="flex gap-2 items-center cursor-pointer">
                         <RiKeyboardFill className="text-3xl" />
                         <h1 className="text-3xl font-bold">GoTyping</h1>
                     </div>
 
                     <div className="flex items-center gap-4 ml-6 text-xl">
-                        <FaKeyboard className="hover:text-blue-400 cursor-pointer" />
-                        <PiCrownSimpleFill onClick={() => {navigate('leadboard')}} className="hover:text-yellow-400 cursor-pointer" />
+                        <FaKeyboard onClick={() => {navigate('/')}} className="hover:text-blue-400 cursor-pointer" />
+                        <PiCrownSimpleFill onClick={() => {navigate('/leadboard')}} className="hover:text-yellow-400 cursor-pointer" />
                         <FaInfoCircle className="hover:text-sky-400 cursor-pointer" />
                         <IoIosSettings className="hover:text-gray-300 cursor-pointer" />
                     </div>

@@ -7,20 +7,22 @@ import { BrowserRouter } from 'react-router-dom';
 import { OverlayProvider } from './components/overlay';
 import { TypingStatsProvider } from './pages/typing-context';
 
-// 🆕 Redux importlari
 import { Provider } from 'react-redux';
 import { store } from './pages/auth/login/store.tsx';
 import AuthObserver from './pages/auth/login/auth-listener.tsx';
 import { TypingProvider } from './context/typing-context.tsx';
+import { AuthProvider } from './context/auth-context.tsx';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<Provider store={store}> {/* 🧠 Redux Provider */}
+		<Provider store={store}> 
 			<BrowserRouter>
 				<OverlayProvider>
 					<TypingStatsProvider>
 						<TypingProvider>
-							<AuthObserver />
+							<AuthProvider>
+								<AuthObserver />
+							</AuthProvider>
 						</TypingProvider>
 					</TypingStatsProvider>
 				</OverlayProvider>

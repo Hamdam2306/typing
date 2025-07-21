@@ -139,29 +139,28 @@ export default function Component() {
     const [data, setData] = useState<Item[]>([])
     useEffect(() => {
         async function fetchPosts() {
-          try {
-            const res = await fetch(
-              "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-            );
-            const fetchedData = await res.json();
-            setData(fetchedData); // Remove originalIndex assignment
-          } catch (error) {
-            console.error("Error fetching data:", error);
-            const mockData = Array.from({ length: 23 }, (_, i) => ({
-              id: `${i + 1}`,
-              name: `User ${i + 1}`,
-              email: `user${i + 1}@example.com`,
-              location: ["New York", "London", "Tokyo", "Paris", "Sydney"][i % 5],
-              flag: ["🇺🇸", "🇬🇧", "🇯🇵", "🇫🇷", "🇦🇺"][i % 5],
-              status: ["Active", "Inactive", "Pending"][i % 3] as "Active" | "Inactive" | "Pending",
-              balance: Math.random() * 10000,
-              // Remove originalIndex
-            }));
-            setData(mockData);
-          }
+            try {
+                const res = await fetch(
+                    "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
+                );
+                const fetchedData = await res.json();
+                setData(fetchedData);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                const mockData = Array.from({ length: 23 }, (_, i) => ({
+                    id: `${i + 1}`,
+                    name: `User ${i + 1}`,
+                    email: `user${i + 1}@example.com`,
+                    location: ["New York", "London", "Tokyo", "Paris", "Sydney"][i % 5],
+                    flag: ["🇺🇸", "🇬🇧", "🇯🇵", "🇫🇷", "🇦🇺"][i % 5],
+                    status: ["Active", "Inactive", "Pending"][i % 3] as "Active" | "Inactive" | "Pending",
+                    balance: Math.random() * 100,
+                }));
+                setData(mockData);
+            }
         }
         fetchPosts();
-      }, []);
+    }, []);
 
     const table = useReactTable({
         data,

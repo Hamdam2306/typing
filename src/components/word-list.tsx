@@ -128,7 +128,7 @@ export const WordList: React.FC<Props> = ({
                         >
                           {char}
                           {isCursor && (
-                            <span className="absolute left-0 top-0 w-[2px] h-full bg-[#eeeeee] animate-pulse" />
+                            <span className="absolute left-0 top-0 w-[3px] h-full bg-[#eeeeee] animate-pulse" />
                           )}
                         </span>
                       );
