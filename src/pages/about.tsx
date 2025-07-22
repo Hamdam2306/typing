@@ -52,11 +52,10 @@ const About = () => {
                             </div>
                         </div>
 
-                        {/* Total Tests */}
                         <div className="text-center">
                             <div className="flex items-center justify-center gap-3 mb-4">
                                 <Hash className="w-6 h-6 text-gray-300" />
-                                <h2 className="text-xl text-gray-300 font-light">Testlar</h2>
+                                <h2 className="text-xl text-gray-300 font-light">all tests</h2>
                             </div>
                             <div className="text-6xl font-light text-gray-100">
                                 {totalTest}
