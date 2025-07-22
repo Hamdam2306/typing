@@ -1,10 +1,9 @@
 import { FaInfoCircle, FaKeyboard, FaUserAlt } from "react-icons/fa"
-import { IoIosSettings } from "react-icons/io"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import { RiKeyboardFill } from "react-icons/ri"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./auth/login/store"
-import { data, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import {
     Menubar,
     MenubarMenu,
@@ -45,15 +44,15 @@ export const Navbar = () => {
                 if (snap.exists()) {
                     const data = snap.data();
                     dispatch(setNickName(data.nickname));
-                    localStorage.setItem("nickname", data.nickname); // fallback
+                    localStorage.setItem("nickname", data.nickname);
                 }
             } else {
-                dispatch(setNickName("")); // logout holatida tozalash
+                dispatch(setNickName("")); 
                 localStorage.removeItem("nickname");
             }
         });
 
-        return () => unsubscribe(); // memory tozalash
+        return () => unsubscribe(); 
     }, []);
 
     const handleClick = () => {
@@ -64,23 +63,12 @@ export const Navbar = () => {
         }
     }
 
-    // useEffect(() => {
-    //     const handleKey = (e: KeyboardEvent) => {
-    //         if (e.key === "Tab") {
-    //             e.preventDefault();
-    //             btnRef2.current?.blur();
-    //         }
-    //     }
-    //     window.addEventListener("keydown", handleKey);
-    //     return () => window.removeEventListener("keydown", handleKey);
-    // })
-
 
     return (
 
         <nav>
 
-            <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-5 py-8">
+            <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-0 py-8">
                 <div className="flex items-center gap-3 text-white">
                     <div onClick={() => { navigate('/')}} className="flex gap-2 items-center cursor-pointer">
                         <RiKeyboardFill className="text-3xl" />
@@ -90,21 +78,9 @@ export const Navbar = () => {
                     <div className="flex items-center gap-4 ml-6 text-xl">
                         <FaKeyboard onClick={() => {navigate('/')}} className="hover:text-blue-400 cursor-pointer" />
                         <PiCrownSimpleFill onClick={() => {navigate('/leadboard')}} className="hover:text-yellow-400 cursor-pointer" />
-                        <FaInfoCircle className="hover:text-sky-400 cursor-pointer" />
-                        <IoIosSettings className="hover:text-gray-300 cursor-pointer" />
+                        <FaInfoCircle onClick={() => {navigate('/about')}} className="hover:text-sky-400 cursor-pointer" />
                     </div>
                 </div>
-
-                {/* <button
-                    onClick={handleClick}
-                    className="flex items-center gap-2 text-white"
-                >
-                    <FaUserAlt className="text-lg" />
-                </button> */}
-
-
-
-                {/* <button onClick={() => logout(navigate)} className="w-max bg-red-600 text-white p-2">logOut</button> */}
 
                 <Menubar>
                     <MenubarMenu>
@@ -114,7 +90,7 @@ export const Navbar = () => {
                             <MenubarItem onClick={handleClick} >Profile</MenubarItem>
                             <MenubarItem onClick={() => logout(navigate)}>Log out</MenubarItem>
                         </MenubarContent>
-                        {/* <p>{nickname}</p> */}
+                      
                     </MenubarMenu>
                 </Menubar>
 

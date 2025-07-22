@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, increment, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "../login/firebase";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2Icon, X } from "lucide-react";
@@ -20,10 +20,8 @@ export const RegisterForm = () => {
 
 
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (!formData.password) {
@@ -96,7 +94,7 @@ export const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitError(null); // Clear previous submission errors before new attempt
+    setSubmitError(null);
 
     if (!validateForm()) {
       console.log("validetion failed")
@@ -138,7 +136,6 @@ export const RegisterForm = () => {
 
 
     try {
-      // 1. Firebase Auth orqali foydalanuvchini yaratish
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
@@ -146,6 +143,11 @@ export const RegisterForm = () => {
       );
 
       const user = userCredential.user;
+
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      const isNewUser = !userSnap.exists();
 
       await setDoc(doc(db, "users", user.uid), {
         nickname: formData.nickname,
@@ -160,7 +162,16 @@ export const RegisterForm = () => {
         testcount: 0
       });
 
+      if (isNewUser) {
+        const statsRef = doc(db, "stats", "tests");
+        await updateDoc(statsRef, {
+          totalUsers: increment(1),
+        });
+
+      }
+
       await updateProfile(user, { displayName: formData.nickname });
+
 
       setFormData({
         nickname: "",

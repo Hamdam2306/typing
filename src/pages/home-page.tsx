@@ -3,22 +3,18 @@ import { WordList } from "../components/word-list";
 import { generateWord } from "../components/generate-words";
 import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
-import { BiLock, BiSolidQuoteAltLeft } from "react-icons/bi";
+import { BiLock } from "react-icons/bi";
 import { ChevronRight, RepeatIcon } from "lucide-react";
 import { PiClockCountdownFill } from "react-icons/pi";
-import { FaAt, FaHashtag, FaWrench } from "react-icons/fa";
-import { AiOutlineClockCircle, AiOutlineFontSize } from "react-icons/ai";
-import { GoTriangleUp } from "react-icons/go";
-import { FiTool } from "react-icons/fi";
 import { Navbar } from "./navbar";
 import { useTyping } from "@/context/typing-context";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
 
 
 const TypingTest = () => {
-  const TOTAL_TIME = 15;
+  const TOTAL_TIME = 30;
   const [words, setWords] = useState<string[]>(generateWord());
   const [typedChars, setTypedChars] = useState<string[][]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -26,10 +22,10 @@ const TypingTest = () => {
   const [status, setStatus] = useState<TestStatus>("idle");
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [correctChars, setCorrectChars] = useState(0)
+  const [ _, setCorrectChars] = useState(0)
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
-  const [typingArea, setTypingArea] = useState(true)
+  const [ __, setTypingArea] = useState(true)
   const { wpm, setWpm, errorKey, setErrorKey } = useTyping();
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -37,6 +33,7 @@ const TypingTest = () => {
   const intervalRef = useRef<number>();
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -55,6 +52,11 @@ const TypingTest = () => {
         testCount: increment(1)
       });
 
+
+      const statsRef = doc(db, "stats", "tests")
+      await updateDoc(statsRef, {
+         totalTests: increment(1)
+      })
     } catch (error) {
       console.error("Statistikani oshirishda xatolik:", error);
     }
@@ -90,9 +92,7 @@ const TypingTest = () => {
           updatedAt: new Date(),
         });
         console.log("✅ Yangi natija saqlandi:", newScore, newPercentage);
-      } else {
-        console.log("ℹ️ Hech qanday yangilanish kerak emas");
-      }
+      } 
     } else {
       console.log("❌ Foydalanuvchi topilmadi Firestore'da.");
     }
@@ -300,8 +300,8 @@ const TypingTest = () => {
             <h1 className="text-6xl font-bold text-white">Test Completed!</h1>
 
             <div className="flex flex-col gap-4">
-              <div className="text-5xl font-bold text-green-400">{wpm} WPM</div>
-              <div className="text-5xl font-bold text-red-400">{errorKey}%</div>
+              <div className="text-5xl font-bold">{wpm} WPM</div>
+              <div className="text-5xl font-bold">{errorKey}%</div>
             </div>
 
             <button
@@ -315,7 +315,7 @@ const TypingTest = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-10">
-            <div className="bg-[#575353] text-white rounded-xl px-3 py-2 flex flex-wrap md:flex-nowrap items-center justify-center md:justify-center gap-5 text-sm font-medium max-w-4xl w-full mx-auto overflow-x-auto">
+            {/* <div className="bg-[#575353] text-white rounded-xl px-3 py-2 flex flex-wrap md:flex-nowrap items-center justify-center md:justify-center gap-5 text-sm font-medium max-w-4xl w-full mx-auto overflow-x-auto">
               <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2">
                 <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
                   <FaAt />
@@ -367,8 +367,7 @@ const TypingTest = () => {
                 <FaWrench className="text-gray-400 cursor-pointer hover:text-white" />
               </div>
 
-              {/* <div>English</div> */}
-            </div>
+            </div> */}
 
 
 
@@ -409,7 +408,7 @@ const TypingTest = () => {
                 </button>
 
 
-                <div className="flex gap-2 items-center mt-10 text-[12px] ">
+                <div className="flex absolute bottom-1/12 gap-2 items-center text-[12px] ">
                   <button className="border bg-gray-300 text-black py-0 px-1 rounded-md">tab</button>
                   <div className="border bg-black text-gray-300 py-0 px-1 rounded-md">+</div>
                   <div className="border bg-gray-300 text-black py-0 px-1 rounded-md">enter</div>

@@ -1,5 +1,5 @@
 // Tahrirlangan: Google login, nickname tekshiruv va saqlash to'liq ishlaydi
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { loginUser } from "./login";
 import { signInWithGoogle } from "./sign-with-google";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { checkUserNickname } from "./nickname";
-import { doc, updateDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { doc, updateDoc, getDocs, collection, query, where, getDoc, setDoc, increment } from "firebase/firestore";
 import { useDispatch } from "react-redux";
 import { setNickName } from "./auth-slice";
 import { RegisterForm } from "../register/register-form";
@@ -26,14 +26,12 @@ export const LoginForm = () => {
   const [nickname, setNickname] = useState("");
   const [showNickNameModal, setShowNickName] = useState(false);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const navigate = useNavigate();
 
   const dispatch = useDispatch()
   localStorage.setItem("nickname", nickname)
   dispatch(setNickName(nickname))
 
-  
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -124,12 +122,25 @@ export const LoginForm = () => {
     const qSnap = await getDocs(q);
     if (!qSnap.empty) {
       setSubmitError("this nickname is already in use");
-      alert('this nick name is already in use')
+      alert('this nick name is already in use');
       setTimeout(() => setSubmitError(null), 2000);
       return;
     }
 
-    await updateDoc(doc(db, "users", user.uid), { nickname });
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+  
+    const isFirstTime = !userSnap.exists(); 
+  
+    await setDoc(userRef, { nickname }, { merge: true });
+
+    if (isFirstTime) {
+      const statsRef = doc(db, "stats", "tests");
+      await updateDoc(statsRef, {
+        totalUsers: increment(1),
+      });
+    }
+
     navigate("/profile");
   };
 

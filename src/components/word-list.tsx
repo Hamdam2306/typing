@@ -10,7 +10,7 @@ export const WordList: React.FC<Props> = ({
 }) => {
   const { showOverlay, setShowOverlay } = useOverlay();
 
-  const { lines, currentLine, wordToLineMap } = useMemo(() => {
+  const { lines, currentLine} = useMemo(() => {
     const maxCharsPerLine = 68; // har qatorda maksimal 65 ta harf
     const lines: string[][] = [];
     const wordToLineMap: number[] = []; // har bir so'z qaysi qatorda
@@ -94,7 +94,7 @@ export const WordList: React.FC<Props> = ({
           )}
 
           {visibleLines.map((line, lineIdx) => (
-            <div key={lineIdx} className="flex flex-wrap gap-x-4 relative">
+            <div key={lineIdx} className="flex flex-wrap gap-x-4 relative ">
               {line.map((word, wordIdx) => {
                 const actualWordIndex = getWordIndex(lineIdx, wordIdx);
                 if (actualWordIndex === -1) return null;

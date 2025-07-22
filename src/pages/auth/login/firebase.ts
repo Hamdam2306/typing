@@ -4,17 +4,16 @@
 
 
   const firebaseConfig = {
-      apiKey: "AIzaSyBd2f_3dMRZ-EGnYXKK9RjE-27gI4H_xXM",
-      authDomain: "typing-55338.firebaseapp.com",
-      projectId: "typing-55338",
-      storageBucket: "typing-55338.firebasestorage.app",
-      messagingSenderId: "108650842424",
-      appId: "1:108650842424:web:3b375820502f13551699cd",
-      measurementId: "G-YQBB2Y5H6E"
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain:import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
+      measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
     };
 
   const app = initializeApp(firebaseConfig);
 
-  // Auth va Firestore instance'larini eksport qilish
   export const auth = getAuth(app);
   export const db = getFirestore(app);

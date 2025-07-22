@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "./navbar";
-import { useEffect, useState } from "react";  
-import { onAuthStateChanged } from "firebase/auth"; 
-import { doc, getDoc, setDoc } from "firebase/firestore"; 
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import {  doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
+import { Zap, Target, Hash, Loader2Icon } from "lucide-react";
 
 export const Profile = () => {
   const navigate = useNavigate();
@@ -11,6 +12,24 @@ export const Profile = () => {
   const [userAccuracy, setUserAccuracy] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTestCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchUserScore = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setTestCount(userData.testCount || 0);
+      }
+    };
+
+    fetchUserScore();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -20,13 +39,13 @@ export const Profile = () => {
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            setUserWpm(userData.score || 0); 
-            setUserAccuracy(userData.percentage || 0); 
+            setUserWpm(userData.score || 0);
+            setUserAccuracy(userData.percentage || 0);
           } else {
             console.log("No such user document!");
             setError("User data not found.");
-            setUserWpm(0); 
-            setUserAccuracy(0); 
+            setUserWpm(0);
+            setUserAccuracy(0);
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
@@ -41,21 +60,19 @@ export const Profile = () => {
         setLoading(false);
         setUserWpm(null);
         setUserAccuracy(null);
-        navigate("/login"); 
+        navigate("/login");
       }
     });
 
-    return () => unsubscribe(); 
-  }, [navigate]); 
-
-
+    return () => unsubscribe();
+  }, [navigate]);
 
   if (loading) {
     return (
       <div>
         <Navbar />
-        <div className="flex flex-col max-w-7xl mx-auto px-5 py-8 items-center justify-center min-h-[calc(100vh-10rem)]">
-          <p className="text-2xl text-gray-600">Loading profile data...</p>
+        <div className="max-w-4xl mx-auto flex justify-center">
+          <div><Loader2Icon className="animate-spin"/></div>
         </div>
       </div>
     );
@@ -65,39 +82,57 @@ export const Profile = () => {
     return (
       <div>
         <Navbar />
-        <div className="flex flex-col max-w-7xl mx-auto px-5 py-8 items-center justify-center min-h-[calc(100vh-6rem)]">
-          <p className="text-2xl text-red-600">Error: {error}</p>
+        <div className="max-w-4xl mx-auto px-6 py-24 text-center">
+          <div className="text-gray-300 text-lg mb-6">{error}</div>
           <button
             onClick={() => navigate("/login")}
-            className="mt-4 px-6 py-3 bg-blue-500 text-white rounded-md text-lg hover:bg-blue-600 transition duration-200"
+            className="px-6 py-2 bg-gray-800 text-gray-100 hover:bg-gray-700 transition-colors"
           >
-            Go to Login
+            Login o'tish
           </button>
         </div>
       </div>
     );
   }
 
- await setDoc(doc(db, ))
-
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col max-w-7xl mx-auto px-2 py-4 items-center justify-center min-h-[calc(100vh-10rem)]">
-        {userWpm !== null && (
-          <div className="text-9xl font-bold text-gray-800 mb-4 animate-fade-in">
-            {userWpm} <span className="text-6xl text-gray-600">wpm</span>
-          </div>
-        )}
-        {userAccuracy !== null && (
-          <div className="text-9xl font-bold text-gray-800 animate-fade-in delay-200">
-            {userAccuracy} <span className="text-6xl text-gray-600">%</span>
-          </div>
-        )}
-        {userWpm === null && userAccuracy === null && (
-          <p className="text-2xl text-gray-600">No score data available yet.</p>
-        )}
+      <div className="max-w-4xl mx-auto px-6 py-24">
+        {/* Main Stats */}
+        <div className="text-center mb-16">
+          {userWpm !== null && userAccuracy !== null ? (
+            <div className="space-y-8">
 
+              <div className="flex items-center justify-center gap-3">
+                <Zap className="w-8 h-8 text-gray-300" />
+                <span className="text-6xl font-light text-gray-100">{userWpm}</span>
+                <span className="text-2xl text-gray-400 mt-4">WPM</span>
+              </div>
+
+              {/* Accuracy */}
+              <div className="flex items-center justify-center gap-3">
+                <Target className="w-8 h-8 text-gray-300" />
+                <span className="text-6xl font-light text-gray-100">{userAccuracy}</span>
+                <span className="text-2xl text-gray-400 mt-4">%</span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-400 text-lg">Ma'lumotlar topilmadi</div>
+          )}
+        </div>
+
+        {/* Tests Count */}
+        <div className="text-center">
+          {totalCount !== null ? (
+            <div className="flex items-center justify-center gap-2 text-gray-400">
+              <Hash className="w-5 h-5" />
+              <span>test complete: {totalCount}</span>
+            </div>
+          ) : (
+            <div><Loader2Icon className="animate-spin" /> Please wait</div>
+          )}
+        </div>
       </div>
     </div>
   );
