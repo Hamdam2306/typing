@@ -76,7 +76,7 @@ const Leadboard = () => {
     return (
         <div>
             <Navbar />
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="max-w-4xl mx-auto px-6 py-1">
                 <div className="text-center mb-12">
                     <h1 className="text-3xl font-light text-gray-100 mb-2">Leaderboard</h1>
                     <div className="text-xl flex items-center justify-center gap-8 text-gray-400">
