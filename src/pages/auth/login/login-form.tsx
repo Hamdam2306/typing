@@ -80,7 +80,7 @@ export const LoginForm = () => {
 
       const nickname = await checkUserNickname();
       if (!nickname) setShowNickName(true);
-      else navigate("/profile");
+      else navigate("/");
     } catch (error: any) {
       setSubmitError("Login failed. Check credentials or try again later.");
       setTimeout(() => setSubmitError(null), 2000);
@@ -91,7 +91,7 @@ export const LoginForm = () => {
   const handleGoogleSignIn = async () => {
     setSubmitError(null);
     setIsLoading(true);
-    // let classname = '';
+  
     try {
       const user = await signInWithGoogle();
       console.log("Logged in with Google:", user);
@@ -101,7 +101,7 @@ export const LoginForm = () => {
         setShowNickName(true);
       }
       else {
-        navigate("/profile")
+        navigate("/")
       }
       setIsLoading(false);
 
@@ -141,7 +141,7 @@ export const LoginForm = () => {
       });
     }
 
-    navigate("/profile");
+    navigate("/");
   };
 
   useEffect(() => {
@@ -150,7 +150,7 @@ export const LoginForm = () => {
         const nickname = await checkUserNickname();
         if (nickname) {
           setShowNickName(false);
-          navigate("/profile");
+          navigate("/");
         } else {
           setShowNickName(true);
         }

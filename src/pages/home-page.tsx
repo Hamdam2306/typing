@@ -12,7 +12,6 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
 
-
 const TypingTest = () => {
   const TOTAL_TIME = 30;
   const [words, setWords] = useState<string[]>(generateWord());
@@ -22,10 +21,10 @@ const TypingTest = () => {
   const [status, setStatus] = useState<TestStatus>("idle");
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [ _, setCorrectChars] = useState(0)
+  const [_, setCorrectChars] = useState(0)
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
-  const [ __, setTypingArea] = useState(true)
+  const [__, setTypingArea] = useState(true)
   const { wpm, setWpm, errorKey, setErrorKey } = useTyping();
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -33,6 +32,7 @@ const TypingTest = () => {
   const intervalRef = useRef<number>();
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
+  const audio = new Audio("../public/click.wav");
 
 
   useEffect(() => {
@@ -44,6 +44,12 @@ const TypingTest = () => {
   }, []);
 
 
+  const playSound = () => {
+    audio.currentTime = 0;
+    audio.play().catch((e) => {
+      console.log("Sound blocked:", e.message);
+    });
+  };
 
   const increaseTestCounters = async (uid: string) => {
     try {
@@ -55,7 +61,7 @@ const TypingTest = () => {
 
       const statsRef = doc(db, "stats", "tests")
       await updateDoc(statsRef, {
-         totalTests: increment(1)
+        totalTests: increment(1)
       })
     } catch (error) {
       console.error("Statistikani oshirishda xatolik:", error);
@@ -92,7 +98,7 @@ const TypingTest = () => {
           updatedAt: new Date(),
         });
         console.log("✅ Yangi natija saqlandi:", newScore, newPercentage);
-      } 
+      }
     } else {
       console.log("❌ Foydalanuvchi topilmadi Firestore'da.");
     }
@@ -196,10 +202,7 @@ const TypingTest = () => {
   }, [setWpm, setErrorKey, setShowOverlay]);
 
   useEffect(() => {
-
     const handleKey = (e: KeyboardEvent) => {
-      const audio = new Audio("../public/click.wav");
-      audio.volume = 1;
 
       if (testEnded) return;
       setShowCapsLock(e.getModifierState("CapsLock"));
@@ -249,8 +252,7 @@ const TypingTest = () => {
           setCurrentCharIndex(0);
         }
       } else if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        audio.currentTime = 0
-        audio.play()
+        playSound()
 
         setShowOverlay(false);
         btnRef.current?.blur();
@@ -415,6 +417,12 @@ const TypingTest = () => {
                   <div>=</div>
                   <div>Restart</div>
                 </div>
+
+                {!user && (
+                  <div className="absolute bottom-10/12 text-center text-sm text-red-500 mt-4">
+                    ⚠️ Your results won't be saved unless you sign up or log in. ⚠️
+                  </div>
+                )}
               </div>
 
             </div>

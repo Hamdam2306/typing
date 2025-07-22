@@ -36,7 +36,7 @@ export const Navbar = () => {
 
 
     useEffect(() => {
-        
+
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userRef = doc(db, "users", user.uid);
@@ -47,12 +47,12 @@ export const Navbar = () => {
                     localStorage.setItem("nickname", data.nickname);
                 }
             } else {
-                dispatch(setNickName("")); 
+                dispatch(setNickName(""));
                 localStorage.removeItem("nickname");
             }
         });
 
-        return () => unsubscribe(); 
+        return () => unsubscribe();
     }, []);
 
     const handleClick = () => {
@@ -70,15 +70,15 @@ export const Navbar = () => {
 
             <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-0 py-8">
                 <div className="flex items-center gap-3 text-white">
-                    <div onClick={() => { navigate('/')}} className="flex gap-2 items-center cursor-pointer">
+                    <div onClick={() => { navigate('/') }} className="flex gap-2 items-center cursor-pointer">
                         <RiKeyboardFill className="text-3xl" />
                         <h1 className="text-3xl font-bold">GoTyping</h1>
                     </div>
 
-                    <div className="flex items-center gap-4 ml-6 text-xl">
-                        <FaKeyboard onClick={() => {navigate('/')}} className="hover:text-blue-400 cursor-pointer" />
-                        <PiCrownSimpleFill onClick={() => {navigate('/leadboard')}} className="hover:text-yellow-400 cursor-pointer" />
-                        <FaInfoCircle onClick={() => {navigate('/about')}} className="hover:text-sky-400 cursor-pointer" />
+                    <div className="flex items-center gap-4 ml-6 text-2xl">
+                        <FaKeyboard onClick={() => { navigate('/') }} className="hover:text-blue-400 cursor-pointer" />
+                        <PiCrownSimpleFill onClick={() => { navigate('/leadboard') }} className="hover:text-yellow-400 cursor-pointer" />
+                        <FaInfoCircle onClick={() => { navigate('/about') }} className="hover:text-sky-400 cursor-pointer" />
                     </div>
                 </div>
 
@@ -87,10 +87,16 @@ export const Navbar = () => {
 
                         <MenubarTrigger><FaUserAlt className="text-2xl flex gap-2" />{nickname || "Guest"}</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={handleClick} >Profile</MenubarItem>
-                            <MenubarItem onClick={() => logout(navigate)}>Log out</MenubarItem>
+                            {
+                                auth.currentUser ? <>
+                                    <MenubarItem onClick={handleClick} >Profile</MenubarItem>
+                                    <MenubarItem onClick={() => logout(navigate)}>Log out</MenubarItem>
+
+                                </> : <MenubarItem onClick={handleClick} >Login/Register</MenubarItem>
+                            }
+
                         </MenubarContent>
-                      
+
                     </MenubarMenu>
                 </Menubar>
 
