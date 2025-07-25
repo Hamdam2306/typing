@@ -1,4 +1,3 @@
-// Tahrirlangan: Google login, nickname tekshiruv va saqlash to'liq ishlaydi
 import { useState, useEffect } from "react";
 import { loginUser } from "./login";
 import { signInWithGoogle } from "./sign-with-google";
@@ -105,7 +104,6 @@ export const LoginForm = () => {
       }
       setIsLoading(false);
 
-      // classname = nickname
 
     } catch (error: any) {
       setSubmitError("Google login failed. Try again later");

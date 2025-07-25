@@ -210,19 +210,6 @@ export const RegisterForm = () => {
       setIsSubmitting(false);
     }
   };
-
-  //   const handleNicknameBlur = async () => {
-  //     if (!formData.nickname.trim()) return;
-
-  //     const exists = await isNicknameTaken(formData.nickname);
-  //     if (exists) {
-  //       setSubmitError("This nickname is already taken.");
-  //     } else if (submitError === "This nickname is already taken.") {
-  //       setSubmitError(null); // foydalanuvchi o‘zgartirganda tozalanadi
-  //     }
-  //   };
-
-
   return (
     <div className="flex p-4">
       <div className="w-full max-w-md">

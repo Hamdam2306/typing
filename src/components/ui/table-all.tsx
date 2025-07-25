@@ -205,7 +205,6 @@ export default function Component() {
                                                     )}
                                                     onClick={header.column.getToggleSortingHandler()}
                                                     onKeyDown={(e) => {
-                                                        // Enhanced keyboard handling for sorting
                                                         if (
                                                             header.column.getCanSort() &&
                                                             (e.key === "Enter" || e.key === " ")
