@@ -28,8 +28,7 @@ const TypingTest = () => {
   const { wpm, setWpm, errorKey, setErrorKey } = useTyping();
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
-  //@ts-ignore
-  const intervalRef = useRef<number>();
+  const intervalRef = useRef<number | null>(null);
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
   const audio = new Audio("../public/click.wav");
@@ -131,7 +130,7 @@ const TypingTest = () => {
 
   useEffect(() => {
     if (timeLeft <= 0 && status === "running") {
-      window.clearInterval(intervalRef.current);
+      window.clearInterval(intervalRef.current as any);
       setStatus("finished");
       setTestEnded(true);
       setTypingArea(false)
@@ -181,7 +180,7 @@ const TypingTest = () => {
 
   const restart = useCallback(() => {
     setTypingArea(true)
-    window.clearInterval(intervalRef.current);
+    window.clearInterval(intervalRef.current as any);
     setWords(generateWord());
     setTypedChars([]);
     setCurrentWordIndex(0);
