@@ -5,14 +5,15 @@ import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
 import { BiLock } from "react-icons/bi";
 import { ChevronRight, RepeatIcon } from "lucide-react";
-import { PiClockCountdownFill } from "react-icons/pi";
 import { Navbar } from "./navbar";
 import { useTyping } from "@/context/typing-context";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
-import { Button } from "@/components/ui/button";
 import { generateWord } from "@/components/generate-words";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import { FaUserAlt } from "react-icons/fa";
+import { PiClockCountdownFill } from "react-icons/pi";
 
 const TypingTest = () => {
   const TOTAL_TIME = 30;
@@ -337,20 +338,19 @@ const TypingTest = () => {
                 </div>
               </div>
 
-              <Button
-                className="cursor-pointer"
-                onClick={() => setWords(generateWord("english"))}
-              >
-                English
-              </Button>
-
-              <Button
-                className="cursor-pointer"
-                onClick={() => setWords(generateWord("russian"))}
-              >
-                Russian
-              </Button>
+              <Menubar>
+              <MenubarMenu>
+                <MenubarTrigger>language</MenubarTrigger>
+                <MenubarContent>
+                  <MenubarItem onClick={() => setWords(generateWord("english"))} >english</MenubarItem>
+                  <MenubarItem onClick={() => setWords(generateWord("russian"))}> russian</MenubarItem>
+                </MenubarContent>
+              </MenubarMenu>
+            </Menubar>
             </div>
+
+       
+
 
             <div className="flex flex-col items-start">
               <div className="flex flex-col items-center gap-10">

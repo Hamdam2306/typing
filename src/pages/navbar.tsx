@@ -1,6 +1,6 @@
 import { FaInfoCircle, FaKeyboard, FaUserAlt } from "react-icons/fa"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import { RiKeyboardFill } from "react-icons/ri"
+import { RiKeyboardFill, RiSettings2Fill } from "react-icons/ri"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./auth/login/store"
 import { useNavigate } from "react-router-dom"
@@ -79,6 +79,7 @@ export const Navbar = () => {
                         <FaKeyboard onClick={() => { navigate('/') }} className="hover:text-blue-400 cursor-pointer" />
                         <PiCrownSimpleFill onClick={() => { navigate('/leadboard') }} className="hover:text-yellow-400 cursor-pointer" />
                         <FaInfoCircle onClick={() => { navigate('/about') }} className="hover:text-sky-400 cursor-pointer" />
+                        <RiSettings2Fill />
                     </div>
                 </div>
 
