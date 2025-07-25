@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WordList } from "../components/word-list";
-import { generateWord } from "../components/generate-words";
+// import { generateWord } from "../components/generate-words";
 import type { TestStatus } from "../components/types";
 import { useOverlay } from "../components/overlay";
 import { BiLock } from "react-icons/bi";
@@ -11,20 +11,22 @@ import { useTyping } from "@/context/typing-context";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
+import { Button } from "@/components/ui/button";
+import { generateWord } from "@/components/generate-words";
 
 const TypingTest = () => {
   const TOTAL_TIME = 30;
-  const [words, setWords] = useState<string[]>(generateWord());
+  const [words, setWords] = useState<string[]>(generateWord("english"));
   const [typedChars, setTypedChars] = useState<string[][]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [status, setStatus] = useState<TestStatus>("idle");
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [_, setCorrectChars] = useState(0)
+  const [_, setCorrectChars] = useState(0);
   const [showCapsLock, setShowCapsLock] = useState(false);
   const [testEnded, setTestEnded] = useState(false);
-  const [__, setTypingArea] = useState(true)
+  const [__, setTypingArea] = useState(true);
   const { wpm, setWpm, errorKey, setErrorKey } = useTyping();
   const { setShowOverlay } = useOverlay();
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -33,7 +35,6 @@ const TypingTest = () => {
   const [user, setUser] = useState<any>(null);
   const audio = new Audio("../public/click.wav");
 
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -41,7 +42,6 @@ const TypingTest = () => {
 
     return () => unsubscribe();
   }, []);
-
 
   const playSound = () => {
     audio.currentTime = 0;
@@ -54,22 +54,23 @@ const TypingTest = () => {
     try {
       const userRef = doc(db, "users", uid);
       await updateDoc(userRef, {
-        testCount: increment(1)
+        testCount: increment(1),
       });
 
-
-      const statsRef = doc(db, "stats", "tests")
+      const statsRef = doc(db, "stats", "tests");
       await updateDoc(statsRef, {
-        totalTests: increment(1)
-      })
+        totalTests: increment(1),
+      });
     } catch (error) {
       console.error("Statistikani oshirishda xatolik:", error);
     }
   };
 
-
-
-  const saveScoreToFirebase = async (user: User, wpm: number, percentage: number) => {
+  const saveScoreToFirebase = async (
+    user: User,
+    wpm: number,
+    percentage: number
+  ) => {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -84,9 +85,7 @@ const TypingTest = () => {
       if (wpm > oldScore) {
         newScore = wpm;
         newPercentage = percentage;
-      }
-
-      else if (wpm === oldScore && percentage > oldPercentage) {
+      } else if (wpm === oldScore && percentage > oldPercentage) {
         newPercentage = percentage;
       }
 
@@ -98,7 +97,7 @@ const TypingTest = () => {
         });
       }
     }
-  }
+  };
   const calculateWpm = useCallback(() => {
     if (!startTime) return 0;
     const minutes = (Date.now() - startTime) / 1000 / 60;
@@ -111,9 +110,8 @@ const TypingTest = () => {
         if (word[i] === c) correctCharacters++;
       });
     });
-    return Math.floor((correctCharacters / 4) / minutes);
+    return Math.floor(correctCharacters / 4 / minutes);
   }, [startTime, typedChars, words]);
-
 
   const startTest = useCallback(() => {
     if (status === "running") return;
@@ -123,17 +121,15 @@ const TypingTest = () => {
     intervalRef.current = window.setInterval(() => {
       setTimeLeft((t) => t - 1);
     }, 1000);
-    if(user) increaseTestCounters(user.uid)
+    if (user) increaseTestCounters(user.uid);
   }, [status, user?.uid]);
-
-
 
   useEffect(() => {
     if (timeLeft <= 0 && status === "running") {
       window.clearInterval(intervalRef.current as any);
       setStatus("finished");
       setTestEnded(true);
-      setTypingArea(false)
+      setTypingArea(false);
 
       let totalCorrectChars = 0;
       let totalTypedAttemptedChars = 0;
@@ -153,13 +149,15 @@ const TypingTest = () => {
 
       if (startTime) {
         const minutes = (Date.now() - startTime) / 1000 / 60;
-        const finalWpm = Math.floor((totalCorrectChars / 4) / minutes);
+        const finalWpm = Math.floor(totalCorrectChars / 4 / minutes);
         setWpm(finalWpm);
       }
 
       let calculatedAccuracy = 0;
       if (totalTypedAttemptedChars > 0) {
-        calculatedAccuracy = Math.floor((totalCorrectChars / totalTypedAttemptedChars) * 100);
+        calculatedAccuracy = Math.floor(
+          (totalCorrectChars / totalTypedAttemptedChars) * 100
+        );
       }
       setErrorKey(calculatedAccuracy);
       setAccuracy(calculatedAccuracy);
@@ -168,7 +166,18 @@ const TypingTest = () => {
         saveScoreToFirebase(user, wpm, calculatedAccuracy);
       }
     }
-  }, [timeLeft, status, startTime, typedChars, words, setWpm, setErrorKey, user, wpm, accuracy]);
+  }, [
+    timeLeft,
+    status,
+    startTime,
+    typedChars,
+    words,
+    setWpm,
+    setErrorKey,
+    user,
+    wpm,
+    accuracy,
+  ]);
 
   useEffect(() => {
     if (status !== "running") return;
@@ -179,9 +188,9 @@ const TypingTest = () => {
   }, [status, calculateWpm, setWpm]);
 
   const restart = useCallback(() => {
-    setTypingArea(true)
+    setTypingArea(true);
     window.clearInterval(intervalRef.current as any);
-    setWords(generateWord());
+    setWords(generateWord("english"));
     setTypedChars([]);
     setCurrentWordIndex(0);
     setCurrentCharIndex(0);
@@ -199,26 +208,21 @@ const TypingTest = () => {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-
       if (testEnded) return;
       setShowCapsLock(e.getModifierState("CapsLock"));
 
       if (e.ctrlKey && e.key === "k") {
-        alert('settings')
+        alert("settings");
         e.preventDefault();
       } else if (e.key === "Tab") {
         e.preventDefault();
         btnRef.current?.focus();
         setShowOverlay(true);
-      }
-      else if (e.key === "Backspace") {
+      } else if (e.key === "Backspace") {
         setShowOverlay(false);
         btnRef.current?.blur();
 
-        if (
-          currentCharIndex === 0 &&
-          currentWordIndex > 0
-        ) {
+        if (currentCharIndex === 0 && currentWordIndex > 0) {
           const prevTyped = typedChars[currentWordIndex - 1]?.join("");
           const prevTarget = words[currentWordIndex - 1];
 
@@ -227,34 +231,36 @@ const TypingTest = () => {
           }
         }
 
-        const updated = typedChars.map(arr => [...arr]);
+        const updated = typedChars.map((arr) => [...arr]);
         if (currentCharIndex > 0) {
           updated[currentWordIndex].splice(currentCharIndex - 1, 1);
           setTypedChars(updated);
-          setCurrentCharIndex(i => i - 1);
-
+          setCurrentCharIndex((i) => i - 1);
         } else if (currentWordIndex > 0) {
-
           const prevWordIndex = currentWordIndex - 1;
           const prevTypedChars = updated[prevWordIndex] || [];
           setCurrentWordIndex(prevWordIndex);
           setCurrentCharIndex(prevTypedChars.length);
           setTypedChars(updated);
         }
-      }
-      else if (e.key === " " && typedChars[currentWordIndex]?.length) {
+      } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
         if (currentWordIndex < words.length - 1) {
           setCurrentWordIndex((i) => i + 1);
           setCurrentCharIndex(0);
         }
-      } else if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        playSound()
+      } else if (
+        (/^[a-zA-Z]$/.test(e.key) || /^[а-яА-ЯёЁ]$/.test(e.key)) &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        playSound();
 
         setShowOverlay(false);
         btnRef.current?.blur();
         if (status === "idle") startTest();
 
-        const currentWord = words[currentWordIndex] || '';
+        const currentWord = words[currentWordIndex] || "";
         const currentTyped = typedChars[currentWordIndex] || [];
         if (currentTyped.length >= currentWord.length + 5) {
           return;
@@ -277,7 +283,7 @@ const TypingTest = () => {
     startTest,
     testEnded,
     setShowOverlay,
-    words
+    words,
   ]);
 
   const formatTime = (sec: number) => {
@@ -287,7 +293,6 @@ const TypingTest = () => {
     const s = (sec % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
-
 
   return (
     <div>
@@ -313,23 +318,39 @@ const TypingTest = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-10">
-
             {showCapsLock && (
               <div className="fixed z-2 top-1/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                 <div className="flex items-center gap-2 bg-white border border-gray-400 px-4 py-3 rounded-lg shadow-md">
                   <BiLock className="w-5 h-5 text-black" />
-                  <span className="text-sm font-medium text-black">Caps Lock On</span>
+                  <span className="text-sm font-medium text-black">
+                    Caps Lock On
+                  </span>
                 </div>
               </div>
             )}
 
-            <div className="flex justify-start mb-1">
-              <div className="text-3xl font-bold font-serif flex items-center gap-3 text-white">
-                <PiClockCountdownFill />
-                {formatTime(timeLeft)}
+            <div className="flex items-center gap-100">
+              <div className="flex justify-start mb-1">
+                <div className="text-3xl font-bold font-serif flex items-center gap-3 text-white">
+                  <PiClockCountdownFill />
+                  {formatTime(timeLeft)}
+                </div>
               </div>
-            </div>
 
+              <Button
+                className="cursor-pointer"
+                onClick={() => setWords(generateWord("english"))}
+              >
+                English
+              </Button>
+
+              <Button
+                className="cursor-pointer"
+                onClick={() => setWords(generateWord("russian"))}
+              >
+                Russian
+              </Button>
+            </div>
 
             <div className="flex flex-col items-start">
               <div className="flex flex-col items-center gap-10">
@@ -350,30 +371,32 @@ const TypingTest = () => {
                   <RepeatIcon size={24} strokeWidth={3} absoluteStrokeWidth />
                 </button>
 
-
                 <div className="flex absolute bottom-1/12 gap-2 items-center text-[12px] ">
-                  <button className="border bg-gray-300 text-black py-0 px-1 rounded-md">tab</button>
-                  <div className="border bg-black text-gray-300 py-0 px-1 rounded-md">+</div>
-                  <div className="border bg-gray-300 text-black py-0 px-1 rounded-md">enter</div>
+                  <button className="border bg-gray-300 text-black py-0 px-1 rounded-md">
+                    tab
+                  </button>
+                  <div className="border bg-black text-gray-300 py-0 px-1 rounded-md">
+                    +
+                  </div>
+                  <div className="border bg-gray-300 text-black py-0 px-1 rounded-md">
+                    enter
+                  </div>
                   <div>=</div>
                   <div>Restart</div>
                 </div>
 
                 {!user && (
                   <div className="absolute bottom-10/12 text-center text-sm text-red-500 mt-4">
-                    ⚠️ Your results won't be saved unless you sign up or log in. ⚠️
+                    ⚠️ Your results won't be saved unless you sign up or log in.
+                    ⚠️
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         )}
       </div>
     </div>
-
-
-
   );
 };
 

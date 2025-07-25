@@ -1,4 +1,4 @@
-const WORDS = [
+const ENGLISH_WORDS = [
   "the",
   "be",
   "of",
@@ -197,11 +197,10 @@ const WORDS = [
   "course",
   "change",
   "help",
-  "line"
-]
+  "line",
+];
 
-export const generateWord = (count: number = 199): string[] => {
-  const shuffled = [...WORDS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+export const englishWord = (): string[] => {
+  const shuffled = [...ENGLISH_WORDS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 199);
 };
-
