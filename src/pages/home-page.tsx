@@ -12,7 +12,6 @@ import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
 import { generateWord } from "@/components/generate-words";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
-import { FaUserAlt } from "react-icons/fa";
 import { PiClockCountdownFill } from "react-icons/pi";
 
 const TypingTest = () => {
