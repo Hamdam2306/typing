@@ -127,7 +127,7 @@ const TypingTest = () => {
     intervalRef.current = window.setInterval(() => {
       setTimeLeft((t) => t - 1);
     }, 1000);
-    increaseTestCounters(user.uid)
+    if(user) increaseTestCounters(user.uid)
   }, [status, user?.uid]);
 
 
