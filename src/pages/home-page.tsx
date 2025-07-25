@@ -97,10 +97,7 @@ const TypingTest = () => {
           percentage: newPercentage,
           updatedAt: new Date(),
         });
-        console.log("✅ Yangi natija saqlandi:", newScore, newPercentage);
       }
-    } else {
-      console.log("❌ Foydalanuvchi topilmadi Firestore'da.");
     }
   }
   const calculateWpm = useCallback(() => {
@@ -317,61 +314,6 @@ const TypingTest = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-10">
-            {/* <div className="bg-[#575353] text-white rounded-xl px-3 py-2 flex flex-wrap md:flex-nowrap items-center justify-center md:justify-center gap-5 text-sm font-medium max-w-4xl w-full mx-auto overflow-x-auto">
-              <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2">
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <FaAt />
-                  <span>punctuation</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <FaHashtag />
-                  <span>numbers</span>
-
-                </div>
-
-                <div className="w-[1px] h-4 bg-[#222] hidden md:block mx-2" />
-
-                <div className="flex items-center gap-1 text-gray-100 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <AiOutlineClockCircle />
-                  <span>time</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <AiOutlineFontSize />
-                  <span>words</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <BiSolidQuoteAltLeft />
-                  <span>quote</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <GoTriangleUp className="text-xl" />
-                  <span>zen</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-white transition whitespace-nowrap">
-                  <FiTool />
-                  <span>custom</span>
-                </div>
-              </div>
-
-              <div className="w-[1px] h-4 bg-[#222] hidden md:block mx-2" />
-
-              <div className="flex items-center gap-5 flex-wrap md:flex-nowrap whitespace-nowrap">
-                <span className="text-gray-100 cursor-pointer hover:text-white">15</span>
-                <span className="text-gray-400 cursor-pointer hover:text-white">30</span>
-                <span className="text-gray-400 cursor-pointer hover:text-white">60</span>
-                <span className="text-gray-400 cursor-pointer hover:text-white">120</span>
-
-                <FaWrench className="text-gray-400 cursor-pointer hover:text-white" />
-              </div>
-
-            </div> */}
-
-
 
             {showCapsLock && (
               <div className="fixed z-2 top-1/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2">

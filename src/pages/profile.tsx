@@ -122,7 +122,6 @@ export const Profile = () => {
           )}
         </div>
 
-        {/* Tests Count */}
         <div className="text-center">
           {totalCount !== null ? (
             <div className="flex items-center justify-center gap-2 text-gray-400">

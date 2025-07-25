@@ -11,26 +11,24 @@ export const WordList: React.FC<Props> = ({
   const { showOverlay, setShowOverlay } = useOverlay();
 
   const { lines, currentLine} = useMemo(() => {
-    const maxCharsPerLine = 68; // har qatorda maksimal 65 ta harf
+    const maxCharsPerLine = 68; 
     const lines: string[][] = [];
-    const wordToLineMap: number[] = []; // har bir so'z qaysi qatorda
+    const wordToLineMap: number[] = []; 
     let currentLine = 0;
     let currentLineChars = 0;
     let currentLineWords: string[] = [];
 
     words.forEach((word, wordIndex) => {
-      // Agar so'z qo'shilganda qator uzunligi 65 dan oshsa, yangi qator boshlaymiz
+
       const wordLength = word.length;
-      const spaceNeeded = currentLineWords.length > 0 ? 1 : 0; // bo'shliq uchun
+      const spaceNeeded = currentLineWords.length > 0 ? 1 : 0; 
 
       if (currentLineChars + spaceNeeded + wordLength > maxCharsPerLine && currentLineWords.length > 0) {
-        // Joriy qatorni saqlash va yangi qator boshlash
         lines.push([...currentLineWords]);
         currentLineWords = [word];
         currentLineChars = wordLength;
         currentLine++;
       } else {
-        // Joriy qatorga so'z qo'shish
         currentLineWords.push(word);
         currentLineChars += spaceNeeded + wordLength;
       }
@@ -38,23 +36,19 @@ export const WordList: React.FC<Props> = ({
       wordToLineMap[wordIndex] = currentLine;
     });
 
-    // Oxirgi qatorni qo'shish
     if (currentLineWords.length > 0) {
       lines.push(currentLineWords);
     }
 
-    // Hozirgi so'z qaysi qatorda ekanligini aniqlash
     const currentLineIndex = wordToLineMap[currentWordIndex] || 0;
 
     return { lines, currentLine: currentLineIndex, wordToLineMap };
   }, [words, currentWordIndex]);
 
-  // Ko'rsatiladigan qatorlarni aniqlash
   const visibleLines = useMemo(() => {
     const maxVisibleLines = 3;
-    let startLine = Math.max(0, currentLine - 1); // Hozirgi qatordan 1 ta yuqori
+    let startLine = Math.max(0, currentLine - 1); 
 
-    // Agar oxirgi qatorlarga yetib kelganda, oxirgi 3 qatorni ko'rsatish
     if (startLine + maxVisibleLines > lines.length) {
       startLine = Math.max(0, lines.length - maxVisibleLines);
     }
@@ -62,12 +56,10 @@ export const WordList: React.FC<Props> = ({
     return lines.slice(startLine, startLine + maxVisibleLines);
   }, [lines, currentLine]);
 
-  // Har bir ko'rinadigan qator uchun boshlang'ich indeksni hisoblash
   const getWordIndex = (lineIndex: number, wordIndex: number) => {
     const actualLineIndex = Math.max(0, currentLine - 1) + lineIndex;
     if (actualLineIndex >= lines.length) return -1;
 
-    // Shu qatorgacha bo'lgan barcha so'zlarni sanash
     let totalWords = 0;
     for (let i = 0; i < actualLineIndex; i++) {
       totalWords += lines[i].length;
@@ -134,7 +126,6 @@ export const WordList: React.FC<Props> = ({
                       );
                     })}
 
-                    {/* So'z oxirida cursor */}
                     {actualWordIndex === currentWordIndex &&
                       currentCharIndex === word.length && (
                         <span className="relative inline-block h-[1em]">
@@ -142,7 +133,6 @@ export const WordList: React.FC<Props> = ({
                         </span>
                       )}
 
-                    {/* Ortiqcha belgilar */}
                     {extraChars.map((extraChar, idx) => {
                       return (
                         <span
@@ -154,7 +144,6 @@ export const WordList: React.FC<Props> = ({
                       );
                     })}
 
-                    {/* Ortiqcha belgilar oxirida cursor */}
                     {actualWordIndex === currentWordIndex &&
                       currentCharIndex === word.length + extraChars.length &&
                       extraChars.length > 0 && (
