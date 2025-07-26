@@ -6,13 +6,15 @@ import { useAuth } from "@/context/auth-context";
 import { Trophy, Zap, Target, User, Loader2Icon } from "lucide-react";
 import { BiBarChart } from "react-icons/bi";
 
+
 const Leadboard = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
     const [totalTest, setTotalTests] = useState<number>(0);
     const { user } = useAuth();
-
+    
+    
     useEffect(() => {
         const loadTotal = async () => {
             const statsRef = doc(db, "stats", "tests");

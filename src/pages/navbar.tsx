@@ -68,7 +68,7 @@ export const Navbar = () => {
 
         <nav>
 
-            <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-0 py-8">
+            <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-0 pt-5">
                 <div className="flex items-center gap-3 text-white">
                     <div onClick={() => { navigate('/') }} className="flex gap-2 items-center cursor-pointer">
                         <RiKeyboardFill className="text-3xl" />
@@ -80,24 +80,21 @@ export const Navbar = () => {
                         <PiCrownSimpleFill onClick={() => { navigate('/leadboard') }} className="hover:text-yellow-400 cursor-pointer" />
                         <FaInfoCircle onClick={() => { navigate('/about') }} className="hover:text-sky-400 cursor-pointer" />
                         <RiSettings2Fill />
+                        
                     </div>
                 </div>
 
                 <Menubar>
                     <MenubarMenu>
-
-                        <MenubarTrigger><FaUserAlt className="text-2xl flex gap-2" />{nickname || "Guest"}</MenubarTrigger>
+                        <MenubarTrigger><FaUserAlt className="text-2xl flex gap-2 cursor-pointer" />{nickname}</MenubarTrigger>
                         <MenubarContent>
                             {
                                 auth.currentUser ? <>
                                     <MenubarItem onClick={handleClick} >Profile</MenubarItem>
                                     <MenubarItem onClick={() => logout(navigate)}>Log out</MenubarItem>
-
-                                </> : <MenubarItem onClick={handleClick} >Login/Register</MenubarItem>
+                                </> : <MenubarItem onClick={handleClick} >Login</MenubarItem>
                             }
-
                         </MenubarContent>
-
                     </MenubarMenu>
                 </Menubar>
 

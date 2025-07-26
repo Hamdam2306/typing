@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import TypingArea from "../pages/home-page/home-page.tsx";
+import TypingArea from "../pages/home-page.tsx";
 import { LoginForm } from "../pages/auth/login/login-form";
 import NotFoundPage from "../pages/not-found.p";
 import { Profile } from "../pages/profile.tsx";

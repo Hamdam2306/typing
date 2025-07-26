@@ -24,6 +24,7 @@
     "firebase": "^11.10.0",
     "framer-motion": "^12.23.6",
     "lucide-react": "^0.525.0",
+    "query": "^0.2.0",
     "radix-ui": "^1.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
