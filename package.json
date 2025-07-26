@@ -34,7 +34,8 @@
     "tailwind-merge": "^3.3.1",
     "tailwind-variants": "^1.0.0",
     "tailwindcss": "^4.1.6",
-    "tw-animate-css": "^1.3.5"
+    "tw-animate-css": "^1.3.5",
+    "typing-2": "."
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
