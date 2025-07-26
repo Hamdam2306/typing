@@ -11,9 +11,9 @@ import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
 import { generateWord } from "@/components/generate-words";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
-import { PiClockCountdownFill, PiEarThin } from "react-icons/pi";
+import { PiClockCountdownFill} from "react-icons/pi";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FaGlobe, FaGlobeAfrica } from "react-icons/fa";
+import { FaGlobeAfrica } from "react-icons/fa";
 
 type Language = 'english' | 'russian'
 
@@ -41,7 +41,7 @@ const TypingTest = () => {
   const [activeTab, setActiveTab] = useState('tab-1');
   const [activeTime, setActiveTime] = useState(30);
   const [activeWord, setActiveWord] = useState(10);
-  const [wordList, setWordList] = useState(false)
+  const [___, setWordList] = useState(false)
   const [showWarning, setShowWarning] = useState(false);
 
   const timeOptions = [15, 30, 60, 120];
