@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WordList } from "../components/word-list";
+import { WordList } from "../../components/word-list";
 // import { generateWord } from "../components/generate-words";
-import type { TestStatus } from "../components/types";
-import { useOverlay } from "../components/overlay";
+import type { TestStatus } from "../../components/types";
+import { useOverlay } from "../../components/overlay";
 import { BiLock } from "react-icons/bi";
 import { ChevronRight, RepeatIcon } from "lucide-react";
-import { Navbar } from "./navbar";
+import { Navbar } from "../navbar";
 import { useTyping } from "@/context/typing-context";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
-import { auth, db } from "./auth/login/firebase";
+import { auth, db } from "../auth/login/firebase";
 import { generateWord } from "@/components/generate-words";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import { PiClockCountdownFill } from "react-icons/pi";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import GoTypingModeSelector from "./mode-selector";
+
+interface Props {
+  onModeChange?: (mode: "time" | "word", value: number) => void
+}
 
 const TypingTest = () => {
   const TOTAL_TIME = 30;
@@ -34,6 +40,14 @@ const TypingTest = () => {
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
   const audio = new Audio("../public/click.wav");
+
+  const [activeTab, setActiveTab] = useState('tab-1'); // To manage which tab is active
+  const [activeTime, setActiveTime] = useState(15); // To manage active button in 'time' tab
+  const [activeWord, setActiveWord] = useState(10); // To manage active button in 'word' tab
+
+  const timeOptions = [15, 30, 60, 120];
+  const wordOptions = [10, 25, 50, 100];
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -320,7 +334,7 @@ const TypingTest = () => {
           <div className="flex flex-col gap-10">
             {showCapsLock && (
               <div className="fixed z-2 top-1/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="flex items-center gap-2 bg-white border border-gray-400 px-4 py-3 rounded-lg shadow-md">
+                <div className="flex items-center gap-2 bg-white border-2 border-gray-400 px-4 py-3 rounded-lg shadow-md">
                   <BiLock className="w-5 h-5 text-black" />
                   <span className="text-sm font-medium text-black">
                     Caps Lock On
@@ -328,6 +342,13 @@ const TypingTest = () => {
                 </div>
               </div>
             )}
+
+            <GoTypingModeSelector
+              onModeChange={(mode, value) => {
+                console.log("tanladi:", mode, value);
+              }}
+            />
+
 
             <div className="flex items-center gap-100">
               <div className="flex justify-start mb-1">
@@ -337,18 +358,20 @@ const TypingTest = () => {
                 </div>
               </div>
 
-              <Menubar>
-              <MenubarMenu>
-                <MenubarTrigger>language</MenubarTrigger>
-                <MenubarContent>
-                  <MenubarItem onClick={() => setWords(generateWord("english"))} >english</MenubarItem>
-                  <MenubarItem onClick={() => setWords(generateWord("russian"))}> russian</MenubarItem>
-                </MenubarContent>
-              </MenubarMenu>
-            </Menubar>
+              {/* <Menubar>
+                <MenubarMenu>
+                  <MenubarTrigger>language</MenubarTrigger>
+                  <MenubarContent>
+                    <MenubarItem onClick={() => setWords(generateWord("english"))} >english</MenubarItem>
+                    <MenubarItem onClick={() => setWords(generateWord("russian"))}> russian</MenubarItem>
+                  </MenubarContent>
+                </MenubarMenu>
+              </Menubar> */}
+
+
             </div>
 
-       
+
 
 
             <div className="flex flex-col items-start">
@@ -386,8 +409,7 @@ const TypingTest = () => {
 
                 {!user && (
                   <div className="absolute bottom-10/12 text-center text-sm text-red-500 mt-4">
-                    ⚠️ Your results won't be saved unless you sign up or log in.
-                    ⚠️
+                    ⚠️ Your results won't be saved unless you sign up or log in.⚠️
                   </div>
                 )}
               </div>

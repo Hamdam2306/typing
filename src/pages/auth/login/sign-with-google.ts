@@ -21,7 +21,9 @@ export const signInWithGoogle = async () => {
       createdAt: serverTimestamp(),
       score: 0,
       percentage: 0,
-      testcount: 0
+      records: {
+        
+      }
     });
   }
 

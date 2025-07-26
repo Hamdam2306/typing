@@ -159,7 +159,6 @@ export const RegisterForm = () => {
         createdAt: new Date(),
         score: 0,
         percentage: 0,
-        testcount: 0
       });
 
       if (isNewUser) {
