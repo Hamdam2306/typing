@@ -189,7 +189,7 @@ const Leadboard = () => {
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 rounded border text-gray-100 disabled:opacity-50"
+            className="px-3 py-2 rounded border text-gray-100 disabled:opacity-50 cursor-pointer"
           >
             <MdNavigateBefore />
           </button>
@@ -198,7 +198,7 @@ const Leadboard = () => {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 rounded border ${
+              className={`px-3 py-1 rounded border cursor-pointer ${
                 page === currentPage
                   ? "bg-gray-700 text-white"
                   : "text-gray-100"
@@ -211,7 +211,7 @@ const Leadboard = () => {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded border text-gray-100 disabled:opacity-50"
+            className="px-3 py-2 rounded border text-gray-100 disabled:opacity-50 cursor-pointer"
           >
             <MdNavigateNext/>
           </button>

@@ -42,7 +42,7 @@ const TypingTest = () => {
   const [activeTime, setActiveTime] = useState(30);
   const [activeWord, setActiveWord] = useState(10);
   const [___, setWordList] = useState(false)
-  const [showWarning, setShowWarning] = useState(false);
+  const [, setShowWarning] = useState(false);
 
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
@@ -367,7 +367,7 @@ const TypingTest = () => {
 
   const handleWordOptionClick = (option: number, e: React.MouseEvent<HTMLButtonElement>) => {
     setActiveWord(option);
-    setWords(generateWord("english"));
+    // setWords(generateWord("english"));
     restart();
     e.currentTarget.blur()
   };
@@ -384,9 +384,8 @@ const TypingTest = () => {
 
   return (
     <div>
-
-      {showWarning && !user && (
-        <div className="flex absolute bottom-10/13 left-6/16 items-center text-sm text-red-500 mt-4">
+      {!user && (
+        <div className="flex justify-center left-6/16 items-center text-sm text-red-500 mt-4 ">
           ⚠️ Your results won't be saved unless you sign up or log in.⚠️
         </div>
       )}
