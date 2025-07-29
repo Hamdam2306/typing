@@ -11,7 +11,7 @@ import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { auth, db } from "./auth/login/firebase";
 import { generateWord } from "@/components/generate-words";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
-import { PiClockCountdownFill} from "react-icons/pi";
+import { PiClockCountdownFill } from "react-icons/pi";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaGlobeAfrica } from "react-icons/fa";
 
@@ -42,12 +42,12 @@ const TypingTest = () => {
   const [activeTime, setActiveTime] = useState(30);
   const [activeWord, setActiveWord] = useState(10);
   const [___, setWordList] = useState(false)
-  const [showWarning,setShowWarning] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
 
- const handleLanguageChange = (newLang: "english" | "russian") => {
+  const handleLanguageChange = (newLang: "english" | "russian") => {
     setLanguage(newLang);
   };
 
@@ -262,8 +262,9 @@ const TypingTest = () => {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (testEnded) return;
+  
       setShowCapsLock(e.getModifierState("CapsLock"));
-
+  
       if (e.ctrlKey && e.key === "k") {
         alert("settings");
         e.preventDefault();
@@ -274,17 +275,15 @@ const TypingTest = () => {
       } else if (e.key === "Backspace") {
         setShowOverlay(false);
         btnRef.current?.blur();
-
+  
         if (currentCharIndex === 0 && currentWordIndex > 0) {
           const prevTyped = typedChars[currentWordIndex - 1]?.join("");
           const prevTarget = words[currentWordIndex - 1];
-
-          if (prevTyped === prevTarget) {
-            return;
-          }
+          if (prevTyped === prevTarget) return;
         }
-
+  
         const updated = typedChars.map((arr) => [...arr]);
+  
         if (currentCharIndex > 0) {
           updated[currentWordIndex].splice(currentCharIndex - 1, 1);
           setTypedChars(updated);
@@ -296,15 +295,18 @@ const TypingTest = () => {
           setCurrentCharIndex(prevTypedChars.length);
           setTypedChars(updated);
         }
+  
       } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
         if (activeTab === 'tab-2' && currentWordIndex >= activeWord - 1) {
           endTest();
           return;
         }
+  
         if (currentWordIndex < words.length - 1) {
           setCurrentWordIndex((i) => i + 1);
           setCurrentCharIndex(0);
         }
+  
       } else if (
         (/^[a-zA-Z]$/.test(e.key) || /^[a-яА-ЯёЁ]$/.test(e.key)) &&
         !e.ctrlKey &&
@@ -312,24 +314,31 @@ const TypingTest = () => {
         !e.altKey
       ) {
         playSound();
-
         setShowOverlay(false);
         btnRef.current?.blur();
         if (status === "idle") startTest();
-
+  
         const currentWord = words[currentWordIndex] || "";
         const currentTyped = typedChars[currentWordIndex] || [];
-        if (currentTyped.length >= currentWord.length + 5) {
-          return;
-        }
-
+  
+        if (currentTyped.length >= currentWord.length + 5) return;
+  
         const updated = [...typedChars];
         updated[currentWordIndex] = updated[currentWordIndex] || [];
         updated[currentWordIndex][currentCharIndex] = e.key;
         setTypedChars(updated);
         setCurrentCharIndex((i) => i + 1);
+          if (
+          activeTab === 'tab-2' &&
+          status === 'running' &&
+          currentWordIndex === activeWord - 1 &&
+          updated[activeWord - 1].length === words[activeWord - 1].length
+        ) {
+          endTest();
+        }
       }
     };
+  
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [
@@ -345,6 +354,7 @@ const TypingTest = () => {
     activeWord,
     endTest
   ]);
+  
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60)
@@ -367,7 +377,7 @@ const TypingTest = () => {
 
   const handleWordOptionClick = (option: number, e: React.MouseEvent<HTMLButtonElement>) => {
     setActiveWord(option);
-    setWords(generateWord("english"));
+
     restart();
     e.currentTarget.blur()
   };
@@ -428,11 +438,11 @@ const TypingTest = () => {
           <div className="flex flex-col gap-10">
             <div>
               <Navbar />
-             
+
               <Menubar className="flex justify-between mt-4">
                 <MenubarMenu>
                   <MenubarTrigger ref={menubarTriggerRef} className="cursor-pointer text-xl">
-                    <FaGlobeAfrica/>
+                    <FaGlobeAfrica />
                   </MenubarTrigger>
                   <MenubarContent className="fixed bg-black">
                     <MenubarItem onClick={() => handleLanguageChange("english")}>
@@ -525,13 +535,12 @@ const TypingTest = () => {
                 <div className="flex flex-col items-center gap-10">
 
                   <WordList
-                    words={words}
+                    words={activeTab === 'tab-2' ? words.slice(0, activeWord) : words}
                     currentWordIndex={currentWordIndex}
                     currentCharIndex={currentCharIndex}
                     typedChars={typedChars}
                     testEnded={testEnded}
                   />
-
                   <button
                     onClick={restart}
                     ref={btnRef}

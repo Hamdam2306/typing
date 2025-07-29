@@ -71,7 +71,7 @@ export const WordList: React.FC<Props> = ({
   return (
     <>
       <div>
-        <div className="flex relative flex-wrap gap-x-4 text-[32px] font-bold leading-relaxed max-w-7xl px-2">
+        <div className="flex relative flex-wrap gap-x-4 text-[32px] font-bold leading-relaxed max-w-7xl px-2 min-w-7xl">
           {showOverlay && (
             <div
               onClick={() => setShowOverlay(false)}
