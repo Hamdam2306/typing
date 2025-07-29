@@ -15,7 +15,7 @@ import { PiClockCountdownFill } from "react-icons/pi";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaGlobeAfrica } from "react-icons/fa";
 
-type Language = 'english' | 'russian'
+type Language = 'english' | 'russian' | 'uzbek' | 'china'| 'french' | 'german'
 
 const TypingTest = () => {
   const [language, setLanguage] = useState<Language>("english")
@@ -47,8 +47,9 @@ const TypingTest = () => {
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
 
-  const handleLanguageChange = (newLang: "english" | "russian") => {
+  const   handleLanguageChange = (newLang: "english" | "uzbek" | 'russian' | 'china' | 'french' | 'german') => {
     setLanguage(newLang);
+    restart()
   };
 
   useEffect(() => {
@@ -262,9 +263,9 @@ const TypingTest = () => {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (testEnded) return;
-  
+
       setShowCapsLock(e.getModifierState("CapsLock"));
-  
+
       if (e.ctrlKey && e.key === "k") {
         alert("settings");
         e.preventDefault();
@@ -275,15 +276,15 @@ const TypingTest = () => {
       } else if (e.key === "Backspace") {
         setShowOverlay(false);
         btnRef.current?.blur();
-  
+
         if (currentCharIndex === 0 && currentWordIndex > 0) {
           const prevTyped = typedChars[currentWordIndex - 1]?.join("");
           const prevTarget = words[currentWordIndex - 1];
           if (prevTyped === prevTarget) return;
         }
-  
+
         const updated = typedChars.map((arr) => [...arr]);
-  
+
         if (currentCharIndex > 0) {
           updated[currentWordIndex].splice(currentCharIndex - 1, 1);
           setTypedChars(updated);
@@ -295,20 +296,19 @@ const TypingTest = () => {
           setCurrentCharIndex(prevTypedChars.length);
           setTypedChars(updated);
         }
-  
+
       } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
         if (activeTab === 'tab-2' && currentWordIndex >= activeWord - 1) {
           endTest();
           return;
         }
-  
+
         if (currentWordIndex < words.length - 1) {
           setCurrentWordIndex((i) => i + 1);
           setCurrentCharIndex(0);
         }
-  
-      } else if (
-        (/^[a-zA-Z]$/.test(e.key) || /^[a-яА-ЯёЁ]$/.test(e.key)) &&
+
+      } else if (e.key.length === 1 &&
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey
@@ -317,18 +317,18 @@ const TypingTest = () => {
         setShowOverlay(false);
         btnRef.current?.blur();
         if (status === "idle") startTest();
-  
+
         const currentWord = words[currentWordIndex] || "";
         const currentTyped = typedChars[currentWordIndex] || [];
-  
+
         if (currentTyped.length >= currentWord.length + 5) return;
-  
+
         const updated = [...typedChars];
         updated[currentWordIndex] = updated[currentWordIndex] || [];
         updated[currentWordIndex][currentCharIndex] = e.key;
         setTypedChars(updated);
         setCurrentCharIndex((i) => i + 1);
-          if (
+        if (
           activeTab === 'tab-2' &&
           status === 'running' &&
           currentWordIndex === activeWord - 1 &&
@@ -338,7 +338,7 @@ const TypingTest = () => {
         }
       }
     };
-  
+
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [
@@ -354,7 +354,7 @@ const TypingTest = () => {
     activeWord,
     endTest
   ]);
-  
+
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60)
@@ -439,22 +439,6 @@ const TypingTest = () => {
             <div>
               <Navbar />
 
-              <Menubar className="flex justify-between mt-4">
-                <MenubarMenu>
-                  <MenubarTrigger ref={menubarTriggerRef} className="cursor-pointer text-xl">
-                    <FaGlobeAfrica />
-                  </MenubarTrigger>
-                  <MenubarContent className="fixed bg-black">
-                    <MenubarItem onClick={() => handleLanguageChange("english")}>
-                      english
-                    </MenubarItem>
-                    <MenubarItem onClick={() => handleLanguageChange("russian")}>
-                      russian
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
-              </Menubar>
-
               <div className="flex items-center gap-1 justify-center">
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="bg-neutral-900 rounded-xl">
                   <TabsList className="rounded-md p-0 flex text-gray-600 ">
@@ -504,6 +488,65 @@ const TypingTest = () => {
                     ))}
                 </div>
               </div>
+
+              <Menubar className="flex justify-center mt-4">
+                <MenubarMenu>
+                  <MenubarTrigger
+                    ref={menubarTriggerRef}
+                    className="cursor-pointer text-sm "
+                  >
+                    <div className="flex gap-1 items-center">
+                      <FaGlobeAfrica />
+                      language
+                    </div>
+                  </MenubarTrigger>
+
+                  <MenubarContent
+                    align="center"
+                    className="fixed transform -translate-x-1/2 bg-black flex flex-col items-center w-[500px]"
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("english")}
+                    >
+                      english
+                    </MenubarItem>
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("uzbek")}
+                    >
+                      uzbek
+                    </MenubarItem>
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("russian")}
+                    >
+                      russian
+                    </MenubarItem>
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("french")}
+                    >
+                      french
+                    </MenubarItem>
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("german")}
+                    >
+                      german
+                    </MenubarItem>
+                    <MenubarItem
+                      className="justify-center w-full text-center"
+                      onClick={() => handleLanguageChange("china")}
+                    >
+                      chinese
+                    </MenubarItem>
+                  </MenubarContent>
+
+                </MenubarMenu>
+              </Menubar>
+
 
 
               <div className="flex absolute bottom-1/12 left-5/11 gap-2 items-center text-[12px] ">
