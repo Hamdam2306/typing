@@ -15,7 +15,7 @@ import { PiClockCountdownFill } from "react-icons/pi";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaGlobeAfrica } from "react-icons/fa";
 
-type Language = 'english' | 'russian' | 'uzbek' | 'china'| 'french' | 'german'
+type Language = 'english' | 'russian' | 'uzbek' | 'china' | 'french' | 'german'
 
 const TypingTest = () => {
   const [language, setLanguage] = useState<Language>("english")
@@ -47,7 +47,7 @@ const TypingTest = () => {
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
 
-  const   handleLanguageChange = (newLang: "english" | "uzbek" | 'russian' | 'china' | 'french' | 'german') => {
+  const handleLanguageChange = (newLang: "english" | "uzbek" | 'russian' | 'china' | 'french' | 'german') => {
     setLanguage(newLang);
     restart()
   };
@@ -427,10 +427,10 @@ const TypingTest = () => {
               <button
                 onClick={restart}
                 ref={btnRef}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-xl transition"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl hover:bg-black text-white text-xl transition cursor-pointer"
                 aria-label="Restart test"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="" />
               </button>
             </div>
           </div>
@@ -504,7 +504,7 @@ const TypingTest = () => {
 
                   <MenubarContent
                     align="center"
-                    className="fixed transform -translate-x-1/2 bg-black flex flex-col items-center min-w-64 max-w-2xl"
+                    className="fixed transform -translate-x-1/2 bg-black flex flex-col items-center w-100"
                     onCloseAutoFocus={(e) => e.preventDefault()}
                   >
                     <MenubarItem
@@ -576,8 +576,8 @@ const TypingTest = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-center gap-10">
 
+                <div className="flex flex-col items-center gap-10">
                   <WordList
                     words={activeTab === 'tab-2' ? words.slice(0, activeWord) : words}
                     currentWordIndex={currentWordIndex}
@@ -585,13 +585,15 @@ const TypingTest = () => {
                     typedChars={typedChars}
                     testEnded={testEnded}
                   />
+                </div>
+                <div className="flex justify-center w-full mt-10">
                   <button
                     onClick={restart}
                     ref={btnRef}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gray-900 hover:bg-gray-300 text-white transition text-lg"
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl hover:bg-gray-600 text-white transition text-lg"
                     aria-label="Restart test"
                   >
-                    <RepeatIcon size={24} strokeWidth={3} absoluteStrokeWidth />
+                    <RepeatIcon size={20} strokeWidth={3} absoluteStrokeWidth />
                   </button>
                 </div>
               </div>
