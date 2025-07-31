@@ -164,9 +164,10 @@ const TypingTest = () => {
       });
     });
 
+    let finalWpm = 0
     if (startTime) {
       const minutes = (Date.now() - startTime) / 1000 / 60;
-      const finalWpm = Math.floor(totalCorrectChars / 4 / minutes);
+      finalWpm = Math.floor(totalCorrectChars / 4 / minutes);
       setWpm(finalWpm);
     }
 
@@ -180,7 +181,7 @@ const TypingTest = () => {
     setAccuracy(calculatedAccuracy);
 
     if (user) {
-      saveScoreToFirebase(user, wpm, calculatedAccuracy);
+      saveScoreToFirebase(user, finalWpm, calculatedAccuracy);
     }
   }, [
     startTime,
@@ -189,10 +190,10 @@ const TypingTest = () => {
     setWpm,
     setErrorKey,
     user,
-    wpm,
     accuracy,
     activeTab,
-    activeWord
+    activeWord,
+    setAccuracy
   ]);
 
 
