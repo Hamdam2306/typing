@@ -37,7 +37,7 @@ const TypingTest = () => {
   const intervalRef = useRef<number | null>(null);
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
-  const audio = new Audio("../public/click.wav");
+  // const audio = new Audio("../public/click.wav");
   const [activeTab, setActiveTab] = useState('tab-1');
   const [activeTime, setActiveTime] = useState(30);
   const [activeWord, setActiveWord] = useState(10);
@@ -71,12 +71,12 @@ const TypingTest = () => {
     return () => unsubscribe();
   }, []);
 
-  const playSound = () => {
-    audio.currentTime = 0;
-    audio.play().catch((e) => {
-      console.log("Sound blocked:", e.message);
-    });
-  };
+  // const playSound = () => {
+  //   audio.currentTime = 0;
+  //   audio.play().catch((e) => {
+  //     console.log("Sound blocked:", e.message);
+  //   });
+  // };
 
   const increaseTestCounters = async (uid: string) => {
     try {
