@@ -37,7 +37,7 @@ const TypingTest = () => {
   const intervalRef = useRef<number | null>(null);
   const [accuracy, setAccuracy] = useState(0);
   const [user, setUser] = useState<any>(null);
-  // const audio = new Audio("../public/click.wav");
+  const audio = new Audio("../public/click.wav");
   const [activeTab, setActiveTab] = useState('tab-1');
   const [activeTime, setActiveTime] = useState(30);
   const [activeWord, setActiveWord] = useState(10);
@@ -71,12 +71,12 @@ const TypingTest = () => {
     return () => unsubscribe();
   }, []);
 
-  // const playSound = () => {
-  //   audio.currentTime = 0;
-  //   audio.play().catch((e) => {
-  //     console.log("Sound blocked:", e.message);
-  //   });
-  // };
+  const playSound = () => {
+    audio.currentTime = 0;
+    audio.play().catch((e) => {
+      console.log("Sound blocked:", e.message);
+    });
+  };
 
   const increaseTestCounters = async (uid: string) => {
     try {
@@ -261,92 +261,100 @@ const TypingTest = () => {
     menubarTriggerRef.current?.blur()
   }, [setWpm, setErrorKey, setShowOverlay, activeTab, activeTime, language]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (testEnded) return;
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (testEnded) return;
 
-    setShowCapsLock(e.getModifierState("CapsLock"));
+      setShowCapsLock(e.getModifierState("CapsLock"));
 
-    if (e.ctrlKey && e.key === "k") {
-      alert("settings");
-      e.preventDefault();
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-      btnRef.current?.focus();
-      setShowOverlay(true);
-    } else if (e.key === "Backspace") {
-      setShowOverlay(false);
-      btnRef.current?.blur();
+      if (e.ctrlKey && e.key === "k") {
+        alert("settings");
+        e.preventDefault();
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        btnRef.current?.focus();
+        setShowOverlay(true);
+      } else if (e.key === "Backspace") {
+        setShowOverlay(false);
+        btnRef.current?.blur();
 
-      if (currentCharIndex === 0 && currentWordIndex > 0) {
-        const prevTyped = typedChars[currentWordIndex - 1]?.join("");
-        const prevTarget = words[currentWordIndex - 1];
-        if (prevTyped === prevTarget) return;
-      }
+        if (currentCharIndex === 0 && currentWordIndex > 0) {
+          const prevTyped = typedChars[currentWordIndex - 1]?.join("");
+          const prevTarget = words[currentWordIndex - 1];
+          if (prevTyped === prevTarget) return;
+        }
 
-      const updated = typedChars.map((arr) => [...arr]);
+        const updated = typedChars.map((arr) => [...arr]);
 
-      if (currentCharIndex > 0) {
-        updated[currentWordIndex].splice(currentCharIndex - 1, 1);
-        setTypedChars(updated);
-        setCurrentCharIndex((i) => i - 1);
-      } else if (currentWordIndex > 0) {
-        const prevWordIndex = currentWordIndex - 1;
-        const prevTypedChars = updated[prevWordIndex] || [];
-        setCurrentWordIndex(prevWordIndex);
-        setCurrentCharIndex(prevTypedChars.length);
-        setTypedChars(updated);
-      }
-    } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
-      if (activeTab === 'tab-2' && currentWordIndex >= activeWord - 1) {
-        endTest();
-        return;
-      }
+        if (currentCharIndex > 0) {
+          updated[currentWordIndex].splice(currentCharIndex - 1, 1);
+          setTypedChars(updated);
+          setCurrentCharIndex((i) => i - 1);
+        } else if (currentWordIndex > 0) {
+          const prevWordIndex = currentWordIndex - 1;
+          const prevTypedChars = updated[prevWordIndex] || [];
+          setCurrentWordIndex(prevWordIndex);
+          setCurrentCharIndex(prevTypedChars.length);
+          setTypedChars(updated);
+        }
 
-      if (currentWordIndex < words.length - 1) {
-        setCurrentWordIndex((i) => i + 1);
-        setCurrentCharIndex(0);
-      }
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      // playSound();
-      setShowOverlay(false);
-      btnRef.current?.blur();
-      if (status === "idle") startTest();
+      } else if (e.key === " " && typedChars[currentWordIndex]?.length) {
+        if (activeTab === 'tab-2' && currentWordIndex >= activeWord - 1) {
+          endTest();
+          return;
+        }
 
-      const currentWord = words[currentWordIndex] || "";
-      const currentTyped = typedChars[currentWordIndex] || [];
+        if (currentWordIndex < words.length - 1) {
+          setCurrentWordIndex((i) => i + 1);
+          setCurrentCharIndex(0);
+        }
 
-      if (currentTyped.length >= currentWord.length + 5) return;
-
-      const updated = [...typedChars];
-      updated[currentWordIndex] = updated[currentWordIndex] || [];
-      updated[currentWordIndex][currentCharIndex] = e.key;
-      setTypedChars(updated);
-      setCurrentCharIndex((i) => i + 1);
-
-      if (
-        activeTab === 'tab-2' &&
-        status === 'running' &&
-        currentWordIndex === activeWord - 1 &&
-        updated[activeWord - 1].length === words[activeWord - 1].length
+      } else if (e.key.length === 1 &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
       ) {
-        endTest();
+        playSound();
+        setShowOverlay(false);
+        btnRef.current?.blur();
+        if (status === "idle") startTest();
+
+        const currentWord = words[currentWordIndex] || "";
+        const currentTyped = typedChars[currentWordIndex] || [];
+
+        if (currentTyped.length >= currentWord.length + 5) return;
+
+        const updated = [...typedChars];
+        updated[currentWordIndex] = updated[currentWordIndex] || [];
+        updated[currentWordIndex][currentCharIndex] = e.key;
+        setTypedChars(updated);
+        setCurrentCharIndex((i) => i + 1);
+        if (
+          activeTab === 'tab-2' &&
+          status === 'running' &&
+          currentWordIndex === activeWord - 1 &&
+          updated[activeWord - 1].length === words[activeWord - 1].length
+        ) {
+          endTest();
+        }
       }
-    }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [
-    testEnded,
     typedChars,
     currentCharIndex,
     currentWordIndex,
     status,
     startTest,
-    endTest,
+    testEnded,
+    setShowOverlay,
     words,
     activeTab,
     activeWord,
-    setShowOverlay,
-    // Boshqa bog'liqliklar (dependencies)
+    endTest
   ]);
-
 
 
   const formatTime = (sec: number) => {
@@ -575,8 +583,7 @@ const TypingTest = () => {
                     currentWordIndex={currentWordIndex}
                     currentCharIndex={currentCharIndex}
                     typedChars={typedChars}
-                    // testEnded={testEnded}
-                    onKeyDown={handleKeyDown}
+                    testEnded={testEnded}
                   />
                   <button
                     onClick={restart}
