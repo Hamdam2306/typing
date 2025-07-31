@@ -307,7 +307,7 @@ const TypingTest = () => {
         setCurrentCharIndex(0);
       }
     } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      playSound();
+      // playSound();
       setShowOverlay(false);
       btnRef.current?.blur();
       if (status === "idle") startTest();
