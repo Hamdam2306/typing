@@ -395,12 +395,6 @@ const TypingTest = () => {
 
   return (
     <div>
-      {showWarning && !user && (
-        <div className="absolute left-6/16 items-center text-sm text-red-500 mt-4 ">
-          ⚠️ Your results won't be saved unless you sign up or log in.⚠️
-        </div>
-      )}
-
       {showCapsLock && (
         <div className="fixed z-2 top-1/5 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div className="flex items-center gap-2 bg-white border-2 border-gray-400 px-4 py-3 rounded-lg shadow-md">
@@ -417,6 +411,12 @@ const TypingTest = () => {
         {testEnded ? (
           <div>
             <Navbar />
+            {showWarning && !user && (
+              <div className="absolute top-0 left-6/16 items-center text-sm text-red-500 mt-4 ">
+                ⚠️ Your results won't be saved unless you sign up or log in.⚠️
+              </div>
+            )}
+
             <div className="flex flex-col items-center text-center gap-10 mt-10">
               <h1 className="text-6xl font-bold text-white">Test Completed!</h1>
               <div className="flex flex-col gap-4">
