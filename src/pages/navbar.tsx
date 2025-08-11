@@ -1,6 +1,6 @@
 import { FaInfoCircle, FaKeyboard, FaUserAlt } from "react-icons/fa"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import { RiKeyboardFill } from "react-icons/ri"
+// import { RiKeyboardFill } from "react-icons/ri"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "./auth/login/store"
 import { useNavigate } from "react-router-dom"
@@ -71,7 +71,7 @@ export const Navbar = () => {
             <div className="flex items-center justify-between mb-8 max-w-7xl mx-auto px-0 pt-5">
                 <div className="flex items-center gap-3 text-white">
                     <div onClick={() => { navigate('/') }} className="flex gap-2 items-center cursor-pointer">
-                        <RiKeyboardFill className="text-3xl" />
+                        {/* <RiKeyboardFill className="text-3xl" /> */}
                         <h1 className="text-3xl font-bold">GoTyping</h1>
                     </div>
 
